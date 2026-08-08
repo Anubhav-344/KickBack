@@ -93,7 +93,7 @@ export default function ResourceSelectionPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 px-4 pb-5">
+      <div className="flex flex-col gap-2.5 px-4 pb-5">
         {filteredUnits.map((unit) => (
           <ResourceUnitCard key={unit.resourceId} unit={unit} />
         ))}

@@ -21,14 +21,13 @@ interface ResourceUnitCardProps {
   unit: ResourceUnit;
 }
 
+// Full-width row card: image occupies the left half, details fill the
+// right half — swapped from the old stacked (image-on-top) grid layout so
+// the image reads larger and clearer on mobile widths.
 export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
   const navigate = useNavigate();
   const { cafeSlug } = useParams();
 
-  // BOOKED here just means "in use right now" — since real availability
-  // depends on the time range picked on the next page, we still let the
-  // user proceed (they might want a later slot). Only maintenance/out-of-
-  // service units are truly unselectable at this stage.
   const isSelectable = unit.status !== "OUT_OF_SERVICE" && unit.status !== "MAINTENANCE";
 
   return (
@@ -39,11 +38,11 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
           navigate(`/cafes/${cafeSlug}/resources/${unit.resourceId}/book`)
         }
         disabled={!isSelectable}
-        className={`w-full text-left transition-transform ${
-          isSelectable ? "active:scale-[0.97]" : "opacity-60 cursor-not-allowed"
+        className={`w-full flex items-stretch text-left transition-transform ${
+          isSelectable ? "active:scale-[0.98]" : "opacity-60 cursor-not-allowed"
         }`}
       >
-        <div className="h-[74px] bg-gradient-to-br from-bg-raised to-bg-surface overflow-hidden">
+        <div className="w-1/2 min-h-[110px] flex-shrink-0 bg-gradient-to-br from-bg-raised to-bg-surface overflow-hidden">
           {unit.imageUrl && (
             <img
               src={unit.imageUrl}
@@ -52,15 +51,16 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
             />
           )}
         </div>
-        <div className="p-2.5">
-          <div className="font-display font-semibold text-[15px] text-text-primary">
+
+        <div className="flex-1 p-3 flex flex-col justify-center min-w-0">
+          <div className="font-display font-semibold text-base text-text-primary truncate">
             {unit.resourceName}
           </div>
-          <div className="text-[11px] text-text-secondary mt-0.5 tabular-nums">
+          <div className="text-xs text-text-secondary mt-0.5 tabular-nums">
             &#8377;{unit.hourlyRate}/hr
           </div>
           <div
-            className={`inline-block mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${STATUS_STYLES[unit.status]}`}
+            className={`inline-block mt-2 w-fit text-[10px] font-medium px-1.5 py-0.5 rounded-full ${STATUS_STYLES[unit.status]}`}
           >
             {STATUS_LABELS[unit.status]}
           </div>
@@ -72,8 +72,6 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
         </div>
       </button>
 
-      {/* Sibling to the button above, not nested inside it — two overlapping
-          interactive elements are fine as long as they aren't nested in the DOM */}
       <BottomSheet
         title={unit.resourceName}
         trigger={
@@ -86,18 +84,12 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
         }
       >
         <div className="flex flex-col gap-2.5 text-xs">
-          {unit.brand && (
-            <InfoRow label="Brand" value={unit.brand} />
-          )}
-          {unit.maxPlayers && (
-            <InfoRow label="Players" value={`Up to ${unit.maxPlayers}`} />
-          )}
+          {unit.brand && <InfoRow label="Brand" value={unit.brand} />}
+          {unit.maxPlayers && <InfoRow label="Players" value={`Up to ${unit.maxPlayers}`} />}
           {unit.games && unit.games.length > 0 && (
             <InfoRow label="Games" value={unit.games.join(", ")} />
           )}
-          {unit.description && (
-            <InfoRow label="Specs" value={unit.description} />
-          )}
+          {unit.description && <InfoRow label="Specs" value={unit.description} />}
         </div>
       </BottomSheet>
     </div>
