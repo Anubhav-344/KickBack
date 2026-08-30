@@ -1,6 +1,6 @@
 // src/features/booking/pages/BookingPage.tsx
 import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -11,6 +11,7 @@ import StartTimeInput from "../components/StartTimeInput";
 import DurationEndTimeFields from "../components/DurationEndTimeFields";
 import PriceSummary from "../components/PriceSummary";
 import { useBookingDraftStore } from "../store/useBookingDraftStore";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import type { ExistingBooking, OperatingWindow } from "../types";
 
 // TEMPORARY mock data — replace with real queries:
@@ -38,17 +39,35 @@ const MOCK_BOOKINGS: ExistingBooking[] = [
 export default function BookingPage() {
   const { resourceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const setResourceId = useBookingDraftStore((s) => s.setResourceId);
+  const currentDraftResourceId = useBookingDraftStore((s) => s.resourceId);
   const reset = useBookingDraftStore((s) => s.reset);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-  // Initialize the draft for this resource when the page mounts.
+  // Only reset the draft when switching to a DIFFERENT resource. Without
+  // this guard, returning here from the login redirect (same resourceId)
+  // would wipe the game/time/duration the guest had already picked —
+  // exactly the state we're trying to preserve across the login gate.
   useEffect(() => {
-    reset();
-    if (resourceId) setResourceId(Number(resourceId));
-  }, [resourceId, reset, setResourceId]);
+    const newId = resourceId ? Number(resourceId) : null;
+    if (newId !== null && newId !== currentDraftResourceId) {
+      reset();
+      setResourceId(newId);
+    }
+  }, [resourceId, currentDraftResourceId, reset, setResourceId]);
 
   const handleBook = () => {
+    // Guests can browse and configure a booking freely — auth is only
+    // required at the moment of actually creating it, since bookings.user_id
+    // is a required FK. Their selections stay in the Zustand draft store,
+    // so returning here after login picks up right where they left off.
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
+
     // Next: create the PENDING hold via useCreateHold(), then navigate
     // to the preview page once the server confirms the slot is claimed.
     navigate(`/bookings/pending/preview`);

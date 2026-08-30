@@ -5,6 +5,10 @@ import ResourceSelectionPage from "@/features/resources/pages/ResourceSelectionP
 import BookingPage from "@/features/booking/pages/BookingPage";
 import BookingPreviewPage from "@/features/booking/pages/BookingPreviewPage";
 import LoginPage from "@/features/auth/pages/LoginPage";
+import SignupPage from "@/features/auth/pages/SignupPage";
+import ProfilePage from "@/features/auth/pages/ProfilePage";
+import MyBookingsPage from "@/features/auth/pages/MyBookingsPage";
+import SupportPage from "@/features/auth/pages/SupportPage";
 
 // Single-cafe MVP: root redirects straight to the (only) cafe's page.
 // When multi-cafe launches, "/" becomes a discovery page instead —
@@ -35,5 +39,19 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/signup",
+    element: <SignupPage />,
+  },
+  { 
+    path: "/profile", 
+    element: <ProfilePage /> 
+  },
+  { path: "/bookings", 
+    element: <MyBookingsPage /> 
+  },
+  { path: "/support", 
+    element: <SupportPage /> 
   },
 ]);

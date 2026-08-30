@@ -26,21 +26,27 @@ export default function AboutSection({ cafe }: AboutSectionProps) {
 
       <div className="flex flex-col gap-2">
         {cafe.phone && (
-          <div className="flex items-center gap-2 text-[13px] text-text-primary">
+          <a
+            href={`tel:${cafe.phone.replace(/\s+/g, "")}`}
+            className="flex items-center gap-2 text-[13px] text-text-primary"
+          >
             <IconBadge>
               <Phone size={12} />
             </IconBadge>
             {cafe.phone}
-          </div>
+          </a>
         )}
 
         {cafe.email && (
-          <div className="flex items-center gap-2 text-[13px] text-text-primary">
+          <a
+            href={`mailto:${cafe.email}`}
+            className="flex items-center gap-2 text-[13px] text-text-primary"
+          >
             <IconBadge>
               <Mail size={12} />
             </IconBadge>
             {cafe.email}
-          </div>
+          </a>
         )}
 
         <a
