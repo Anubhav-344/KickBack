@@ -32,3 +32,33 @@ COMPLETED
 
 \------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+STATUS
+
+\------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+| Page | Status |
+
+|---|---|
+
+| Café landing | ✅ Built |
+
+| Resource type → unit selection | ✅ Built |
+
+| Booking page (time/duration/game) | ✅ Built |
+
+| Booking preview (offers, payment method) | ✅ Built |
+
+| \*\*Booking confirmation (post-payment success)\*\* | ✅ Built |
+
+| Login/Signup | ✅ Built |
+
+| Profile / My Bookings / Support | 🟡 Stubs only |
+
+| \*\*Reviews (leaving one after a completed session)\*\* | ❌ Never designed at all — schema has a `REVIEWS` table, but no UI exists anywhere |
+
+| Multi-cafe discovery/home | ❌ Not built (what you're asking about now) |
+
+| Owner-side dashboard | ❌ Not started (out of scope so far — we only ever wireframed the end-user flow) |
+

@@ -87,9 +87,12 @@ export default function BookingPreviewPage() {
   };
 
   const handlePay = () => {
-    // Next: useInitiatePayment() -> Razorpay checkout -> on success,
-    // update booking to CONFIRMED and navigate to a confirmation screen.
-    toast.success("Redirecting to payment...");
+    // Next: useInitiatePayment() -> Razorpay checkout -> on the SDK's
+    // success callback, update booking to CONFIRMED server-side, THEN
+    // navigate here. Navigating immediately (as below) is a placeholder
+    // until that real payment round-trip exists.
+    toast.success("Payment successful!");
+    navigate("/bookings/KB-20260722-0847/confirmation");
   };
 
   return (
