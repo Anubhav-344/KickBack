@@ -8,6 +8,9 @@ import Input from "@/components/ui/Input";
 import { loginSchema, type LoginFormValues } from "@/lib/validators";
 import { useLogin } from "../hooks/useAuth";
 
+// TODO(dev-only): remove this import once real auth/login is live
+import DevLoginPanel from "../components/DevLoginPanel"; // ← dev login for testing
+
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? undefined;
@@ -75,6 +78,9 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
+
+        {/* TODO(dev-only): remove this block once real auth/login is live */}
+        {import.meta.env.DEV && <DevLoginPanel redirectTo={redirectTo} />}
       </div>
     </PageShell>
   );
