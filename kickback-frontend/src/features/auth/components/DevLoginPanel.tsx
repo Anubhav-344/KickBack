@@ -2,24 +2,30 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 
+// Shaped to exactly match useAuthStore's User interface — userId (number)
+// and role are both required there, so mock users must include them too
+// or login() won't type-check.
 const MOCK_USERS = {
   newUser: {
-    id: "u_new",
+    userId: 101,
     firstName: "Alex",
     lastName: "New",
     email: "alex.new@test.com",
+    role: "USER" as const,
   },
   regularUser: {
-    id: "u_reg",
+    userId: 102,
     firstName: "Sam",
     lastName: "Regular",
     email: "sam.reg@test.com",
+    role: "USER" as const,
   },
   powerUser: {
-    id: "u_power",
+    userId: 103,
     firstName: "Jordan",
     lastName: "Power",
     email: "jordan.power@test.com",
+    role: "USER" as const,
   },
 };
 
@@ -33,29 +39,29 @@ export default function DevLoginPanel({ redirectTo }: { redirectTo?: string }) {
   };
 
   return (
-    <div className="mt-6 border-t border-dashed border-border pt-4">
+    <div className="mt-6 border-t border-dashed border-border-subtle pt-4">
       <p className="text-[10px] uppercase tracking-wide text-text-secondary mb-2">
-        Dev Only — Quick Login
+        Dev Only &mdash; Quick Login
       </p>
       <div className="flex gap-2">
         <button
           type="button"
           onClick={() => loginAs("newUser")}
-          className="text-xs px-3 py-1.5 rounded-md border border-border text-text-secondary hover:text-text-primary"
+          className="text-xs px-3 py-1.5 rounded-md border border-border-subtle text-text-secondary hover:text-text-primary transition-colors"
         >
           New User
         </button>
         <button
           type="button"
           onClick={() => loginAs("regularUser")}
-          className="text-xs px-3 py-1.5 rounded-md border border-border text-text-secondary hover:text-text-primary"
+          className="text-xs px-3 py-1.5 rounded-md border border-border-subtle text-text-secondary hover:text-text-primary transition-colors"
         >
           Regular User
         </button>
         <button
           type="button"
           onClick={() => loginAs("powerUser")}
-          className="text-xs px-3 py-1.5 rounded-md border border-border text-text-secondary hover:text-text-primary"
+          className="text-xs px-3 py-1.5 rounded-md border border-border-subtle text-text-secondary hover:text-text-primary transition-colors"
         >
           Power User
         </button>

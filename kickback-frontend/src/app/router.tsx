@@ -10,6 +10,7 @@ import ProfilePage from "@/features/auth/pages/ProfilePage";
 import MyBookingsPage from "@/features/auth/pages/MyBookingsPage";
 import SupportPage from "@/features/auth/pages/SupportPage";
 import BookingConfirmationPage from "@/features/booking/pages/BookingConfirmationPage";
+import CafeDiscoveryPage from "@/features/cafe/pages/CafeDiscoveryPage";
 
 // Single-cafe MVP: root redirects straight to the (only) cafe's page.
 // When multi-cafe launches, "/" becomes a discovery page instead —
@@ -17,9 +18,9 @@ import BookingConfirmationPage from "@/features/booking/pages/BookingConfirmatio
 const CAFE_SLUG = "respawn-lounge";
 
 export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Navigate to={`/cafes/${CAFE_SLUG}`} replace />,
+  { 
+    path: "/", 
+    element: <CafeDiscoveryPage /> 
   },
   {
     path: "/cafes/:cafeSlug",

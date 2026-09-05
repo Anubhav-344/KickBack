@@ -12,9 +12,8 @@ TO-COMPLETE
 4. think of adding settings/notification in profile dropdown
 5. Since you mentioned pfp selection from a preset gallery, not custom upload — that's a good call (avoids image moderation/storage entirely) — but it means USERS needs a new column, something like avatar\_id INT NULL referencing a small fixed set of preset images. Worth adding whenever you touch the schema next.
 6. check what happens when you try to book for a unavailable slot
-7. 
-
-&#x20;
+7. No back btn in pfp, my bookings, help-support pages
+8. Placeholder in cafe search shows incorrect info
 
 \------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
