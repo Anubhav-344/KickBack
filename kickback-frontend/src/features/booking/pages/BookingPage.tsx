@@ -1,6 +1,6 @@
 // src/features/booking/pages/BookingPage.tsx
 import { useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -12,32 +12,10 @@ import DurationEndTimeFields from "../components/DurationEndTimeFields";
 import PriceSummary from "../components/PriceSummary";
 import { useBookingDraftStore } from "../store/useBookingDraftStore";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import type { ExistingBooking, OperatingWindow } from "../types";
-
-// TEMPORARY mock data — replace with real queries:
-//   useResourceDetails(resourceId), useOperatingHours(cafeSlug, date),
-//   useExistingBookings(resourceId, date)
-const MOCK_UNIT = {
-  resourceId: 1,
-  resourceName: "PS5 - Unit 1",
-  hourlyRate: 150,
-  maxPlayers: 4,
-  games: ["FIFA 24", "GTA V", "God of War"],
-};
-
-const MOCK_OPERATING_WINDOW: OperatingWindow = {
-  openingMinutes: 12 * 60, // 12 PM
-  closingMinutes: 24 * 60, // 12 AM
-  isClosed: false,
-};
-
-const MOCK_BOOKINGS: ExistingBooking[] = [
-  { startMinutes: 12 * 60, endMinutes: 13 * 60 }, // 12-1 PM
-  { startMinutes: 19 * 60, endMinutes: 20 * 60 }, // 7-8 PM
-];
+import { getCafeBySlug, getUnitById, getBookingsForResource } from "@/mocks/cafes";
 
 export default function BookingPage() {
-  const { resourceId } = useParams();
+  const { cafeSlug, resourceId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -46,10 +24,13 @@ export default function BookingPage() {
   const reset = useBookingDraftStore((s) => s.reset);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
+  const cafe = cafeSlug ? getCafeBySlug(cafeSlug) : undefined;
+  const unit = resourceId ? getUnitById(Number(resourceId)) : undefined;
+  const bookings = resourceId ? getBookingsForResource(Number(resourceId)) : [];
+
   // Only reset the draft when switching to a DIFFERENT resource. Without
   // this guard, returning here from the login redirect (same resourceId)
-  // would wipe the game/time/duration the guest had already picked —
-  // exactly the state we're trying to preserve across the login gate.
+  // would wipe the game/time/duration the guest had already picked.
   useEffect(() => {
     const newId = resourceId ? Number(resourceId) : null;
     if (newId !== null && newId !== currentDraftResourceId) {
@@ -59,46 +40,62 @@ export default function BookingPage() {
   }, [resourceId, currentDraftResourceId, reset, setResourceId]);
 
   const handleBook = () => {
-    // Guests can browse and configure a booking freely — auth is only
-    // required at the moment of actually creating it, since bookings.user_id
-    // is a required FK. Their selections stay in the Zustand draft store,
-    // so returning here after login picks up right where they left off.
     if (!isAuthenticated) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
-
     // Next: create the PENDING hold via useCreateHold(), then navigate
     // to the preview page once the server confirms the slot is claimed.
     navigate(`/bookings/pending/preview`);
   };
+
+  if (!cafe || !unit) {
+    return (
+      <PageShell>
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          <p className="text-sm text-text-secondary mb-5">
+            This resource couldn&apos;t be found.
+          </p>
+          <Link
+            to={cafe ? `/cafes/${cafe.slug}` : "/"}
+            className="text-sm font-semibold text-accent-hover border border-accent/40 rounded-md px-4 py-2"
+          >
+            {cafe ? "Back to Caf\u00E9" : "Back to Discovery"}
+          </Link>
+        </div>
+        <Footer />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
       <Header />
 
       <ResourceHeader
-        cafeName="Respawn Lounge"
-        unitName={MOCK_UNIT.resourceName}
-        hourlyRate={MOCK_UNIT.hourlyRate}
-        maxPlayers={MOCK_UNIT.maxPlayers}
+        cafeName={cafe.name}
+        unitName={unit.resourceName}
+        hourlyRate={unit.hourlyRate}
+        maxPlayers={unit.maxPlayers}
+        imageUrl={unit.imageUrl}
       />
 
       <AvailabilityTimeline
-        unitName={MOCK_UNIT.resourceName}
-        operatingWindow={MOCK_OPERATING_WINDOW}
-        bookings={MOCK_BOOKINGS}
+        unitName={unit.resourceName}
+        operatingWindow={cafe.operatingWindowToday}
+        bookings={bookings}
       />
 
       <div className="px-4 py-4">
-        <GameSelectField games={MOCK_UNIT.games} />
+        <GameSelectField games={unit.games ?? []} />
         <StartTimeInput />
         <DurationEndTimeFields />
       </div>
 
-      <PriceSummary hourlyRate={MOCK_UNIT.hourlyRate} onBook={handleBook} />
+      <PriceSummary hourlyRate={unit.hourlyRate} onBook={handleBook} />
 
-      <Footer cafeName="Respawn Lounge" locationLabel="Bhopal" />
+      <Footer cafeName={cafe.name} locationLabel={cafe.address.city} />
     </PageShell>
   );
 }

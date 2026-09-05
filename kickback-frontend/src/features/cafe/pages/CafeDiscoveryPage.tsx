@@ -7,61 +7,9 @@ import Footer from "@/components/layout/Footer";
 import CafeListingCard from "../components/CafeListingCard";
 import ResourceTypeFilterChips from "../components/ResourceTypeFilterChips";
 import { computeCafeOpenStatus } from "@/lib/cafeStatus";
-import type { CafeListing } from "../types";
+import { getAllCafes, toCafeListing } from "@/mocks/cafes";
 
-// TEMPORARY mock — replace with useCafeListings() (React Query, GET /cafes),
-// scoped to the fixed city for now since there's no geolocation/search-by-
-// location — see design notes on skipping permission prompts entirely.
-const MOCK_CAFES: CafeListing[] = [
-  {
-    cafeId: 1,
-    slug: "respawn-lounge",
-    name: "Respawn Lounge",
-    area: "MP Nagar",
-    city: "Bhopal",
-    averageRating: 4.6,
-    totalReviews: 128,
-    startingHourlyRate: 120,
-    resourceTypeTags: ["PS5", "VR", "Pool", "PC", "Snooker"],
-    todayOperatingWindow: { openingMinutes: 10 * 60, closingMinutes: 23 * 60, isClosedToday: false },
-  },
-  {
-    cafeId: 2,
-    slug: "pixel-arena",
-    name: "Pixel Arena",
-    area: "Arera Colony",
-    city: "Bhopal",
-    averageRating: 4.3,
-    totalReviews: 64,
-    startingHourlyRate: 100,
-    resourceTypeTags: ["PC", "Racing Sim"],
-    todayOperatingWindow: { openingMinutes: 11 * 60, closingMinutes: 22 * 60, isClosedToday: false },
-  },
-  {
-    cafeId: 3,
-    slug: "gg-gaming-hub",
-    name: "GG Gaming Hub",
-    area: "Kolar Road",
-    city: "Bhopal",
-    averageRating: 4.1,
-    totalReviews: 41,
-    startingHourlyRate: 130,
-    resourceTypeTags: ["PS5", "Snooker"],
-    todayOperatingWindow: { openingMinutes: 17 * 60, closingMinutes: 24 * 60, isClosedToday: false },
-  },
-  {
-    cafeId: 4,
-    slug: "level-up-cafe",
-    name: "Level Up Caf\u00E9",
-    area: "New Market",
-    city: "Bhopal",
-    averageRating: 4.4,
-    totalReviews: 89,
-    startingHourlyRate: 110,
-    resourceTypeTags: ["PS5", "PC", "VR"],
-    todayOperatingWindow: { openingMinutes: 0, closingMinutes: 0, isClosedToday: true },
-  },
-];
+const ALL_CAFES = getAllCafes().map(toCafeListing);
 
 export default function CafeDiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,7 +17,7 @@ export default function CafeDiscoveryPage() {
   const [openNowOnly, setOpenNowOnly] = useState(false);
 
   const availableTypes = useMemo(
-    () => Array.from(new Set(MOCK_CAFES.flatMap((c) => c.resourceTypeTags))).sort(),
+    () => Array.from(new Set(ALL_CAFES.flatMap((c) => c.resourceTypeTags))).sort(),
     []
   );
 
@@ -79,7 +27,7 @@ export default function CafeDiscoveryPage() {
     );
 
   const filteredAndSortedCafes = useMemo(() => {
-    const filtered = MOCK_CAFES.filter((cafe) => {
+    const filtered = ALL_CAFES.filter((cafe) => {
       const matchesSearch =
         !searchQuery.trim() ||
         cafe.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
@@ -122,7 +70,7 @@ export default function CafeDiscoveryPage() {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search caf\u00E9s, games, areas..."
+            placeholder="Search cafés, games, areas..."
             className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
           />
         </div>

@@ -1,11 +1,6 @@
 // src/lib/cafeStatus.ts
 import { formatMinutesAsTime } from "./dateTime";
-
-export interface DayOperatingWindow {
-  openingMinutes: number;
-  closingMinutes: number; // may exceed 1440 for overnight closing
-  isClosedToday: boolean;
-}
+import type { OperatingWindow } from "@/features/booking/types";
 
 export interface CafeOpenStatus {
   isOpenNow: boolean;
@@ -13,7 +8,7 @@ export interface CafeOpenStatus {
 }
 
 export function computeCafeOpenStatus(
-  window: DayOperatingWindow,
+  window: OperatingWindow,
   nowMinutes: number = getCurrentMinutes()
 ): CafeOpenStatus {
   if (window.isClosedToday) {
@@ -27,7 +22,7 @@ export function computeCafeOpenStatus(
   }
 
   if (nowMinutes < openingMinutes) {
-    // Hasn't opened yet today — genuinely "opens soon/later today"
+    // Hasn't opened yet today — genuinely "opens later today"
     return { isOpenNow: false, label: `Opens at ${formatMinutesAsTime(openingMinutes)}` };
   }
 

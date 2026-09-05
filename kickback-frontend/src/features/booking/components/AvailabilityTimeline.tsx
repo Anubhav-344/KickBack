@@ -50,14 +50,14 @@ export default function AvailabilityTimeline({
   const { openingMinutes, closingMinutes } = operatingWindow;
   const totalSpan = closingMinutes - openingMinutes;
 
-  const segments = operatingWindow.isClosed
+  const segments = operatingWindow.isClosedToday
     ? []
     : computeTimelineSegments(openingMinutes, closingMinutes, bookings, startMinutes, endMinutes);
-  const gaps = operatingWindow.isClosed
+  const gaps = operatingWindow.isClosedToday
     ? []
     : computeAvailableGaps(openingMinutes, closingMinutes, bookings);
 
-  const tickCount = operatingWindow.isClosed ? 0 : Math.floor(totalSpan / 120) + 1;
+  const tickCount = operatingWindow.isClosedToday ? 0 : Math.floor(totalSpan / 120) + 1;
   const ticks = Array.from({ length: tickCount }, (_, i) => openingMinutes + i * 120);
 
   return (
@@ -92,7 +92,7 @@ export default function AvailabilityTimeline({
       </div>
 
       <div className="bg-bg-surface border border-border-subtle rounded-card p-3.5">
-        {operatingWindow.isClosed ? (
+        {operatingWindow.isClosedToday ? (
           <div className="text-sm text-text-secondary text-center py-2">
             Closed on this date
           </div>

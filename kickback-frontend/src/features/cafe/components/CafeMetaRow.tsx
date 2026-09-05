@@ -4,6 +4,7 @@ import { Star } from "lucide-react";
 interface CafeMetaRowProps {
   name: string;
   isOpenNow: boolean;
+  statusLabel: string;
   locationLabel: string;
   averageRating: number;
   totalReviews: number;
@@ -12,6 +13,7 @@ interface CafeMetaRowProps {
 export default function CafeMetaRow({
   name,
   isOpenNow,
+  statusLabel,
   locationLabel,
   averageRating,
   totalReviews,
@@ -30,7 +32,7 @@ export default function CafeMetaRow({
                 : "bg-state-booked"
             }`}
           />
-          {isOpenNow ? "Open now" : "Closed"} &middot; {locationLabel}
+          {statusLabel} &middot; {locationLabel}
         </div>
       </div>
 
