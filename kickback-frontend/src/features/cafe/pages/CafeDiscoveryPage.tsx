@@ -7,18 +7,18 @@ import Footer from "@/components/layout/Footer";
 import CafeListingCard from "../components/CafeListingCard";
 import ResourceTypeFilterChips from "../components/ResourceTypeFilterChips";
 import { computeCafeOpenStatus } from "@/lib/cafeStatus";
-import { getAllCafes, toCafeListing } from "@/mocks/cafes";
-
-const ALL_CAFES = getAllCafes().map(toCafeListing);
+import { useCafeListings } from "../hooks/useCafeListings";
 
 export default function CafeDiscoveryPage() {
+  const { data: cafes, isLoading, isError } = useCafeListings();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [openNowOnly, setOpenNowOnly] = useState(false);
 
   const availableTypes = useMemo(
-    () => Array.from(new Set(ALL_CAFES.flatMap((c) => c.resourceTypeTags))).sort(),
-    []
+    () => Array.from(new Set((cafes ?? []).flatMap((c) => c.resourceTypeTags))).sort(),
+    [cafes]
   );
 
   const toggleType = (type: string) =>
@@ -27,7 +27,9 @@ export default function CafeDiscoveryPage() {
     );
 
   const filteredAndSortedCafes = useMemo(() => {
-    const filtered = ALL_CAFES.filter((cafe) => {
+    if (!cafes) return [];
+
+    const filtered = cafes.filter((cafe) => {
       const matchesSearch =
         !searchQuery.trim() ||
         cafe.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
@@ -49,7 +51,7 @@ export default function CafeDiscoveryPage() {
       const bOpen = computeCafeOpenStatus(b.todayOperatingWindow).isOpenNow;
       return aOpen === bOpen ? 0 : aOpen ? -1 : 1;
     });
-  }, [searchQuery, selectedTypes, openNowOnly]);
+  }, [cafes, searchQuery, selectedTypes, openNowOnly]);
 
   return (
     <PageShell>
@@ -86,12 +88,21 @@ export default function CafeDiscoveryPage() {
       />
 
       <div className="text-xs uppercase tracking-wide text-text-secondary px-4 pb-2.5">
-        {filteredAndSortedCafes.length}{" "}
-        {filteredAndSortedCafes.length === 1 ? "caf\u00E9" : "caf\u00E9s"} in Bhopal
+        {isLoading
+          ? "Loading caf\u00E9s..."
+          : `${filteredAndSortedCafes.length} ${filteredAndSortedCafes.length === 1 ? "caf\u00E9" : "caf\u00E9s"} in Bhopal`}
       </div>
 
       <div className="flex flex-col gap-3 px-4 pb-6">
-        {filteredAndSortedCafes.length === 0 ? (
+        {isLoading ? (
+          <div className="text-sm text-text-secondary text-center py-10">
+            Loading caf&eacute;s...
+          </div>
+        ) : isError ? (
+          <div className="text-sm text-state-error text-center py-10">
+            Couldn&apos;t load caf&eacute;s. Please try again.
+          </div>
+        ) : filteredAndSortedCafes.length === 0 ? (
           <div className="text-sm text-text-secondary text-center py-10">
             No caf&eacute;s match your filters.
           </div>

@@ -11,6 +11,7 @@ import MyBookingsPage from "@/features/auth/pages/MyBookingsPage";
 import SupportPage from "@/features/auth/pages/SupportPage";
 import BookingConfirmationPage from "@/features/booking/pages/BookingConfirmationPage";
 import CafeDiscoveryPage from "@/features/cafe/pages/CafeDiscoveryPage";
+import RequireAuth from "@/features/auth/components/RequireAuth";
 
 // Single-cafe MVP: root redirects straight to the (only) cafe's page.
 // When multi-cafe launches, "/" becomes a discovery page instead —
@@ -34,9 +35,9 @@ export const router = createBrowserRouter([
     path: "/cafes/:cafeSlug/resources/:resourceId/book",
     element: <BookingPage />,
   },
-  {
-    path: "/bookings/:bookingId/preview",
-    element: <BookingPreviewPage />,
+  { 
+    path: "/bookings/:bookingId/preview", 
+    element: <RequireAuth><BookingPreviewPage /></RequireAuth> 
   },
   {
     path: "/login",
@@ -48,15 +49,19 @@ export const router = createBrowserRouter([
   },
   { 
     path: "/profile", 
-    element: <ProfilePage /> 
+    element: <RequireAuth><ProfilePage /></RequireAuth> 
   },
-  { path: "/bookings", 
-    element: <MyBookingsPage /> 
+  { 
+    path: "/bookings", 
+    element: <RequireAuth><MyBookingsPage /></RequireAuth> 
   },
-  { path: "/support", 
+  { 
+    path: "/support", 
     element: <SupportPage /> 
   },
-  { path: "/bookings/:bookingId/confirmation", 
-    element: <BookingConfirmationPage /> 
+  { 
+    path: "/bookings/:bookingId/confirmation", 
+    element: <RequireAuth><BookingConfirmationPage /></RequireAuth> 
   },
+   
 ]);

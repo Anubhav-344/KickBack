@@ -10,14 +10,26 @@ import ResourceTypeGrid from "@/features/resources/components/ResourceTypeGrid";
 import AmenitiesSection from "../components/AmenitiesSection";
 import AboutSection from "../components/AboutSection";
 import BookFloatingButton from "../components/BookFloatingButton";
-import { getCafeBySlug } from "@/mocks/cafes";
+import { useCafeDetails } from "../hooks/useCafeDetails";
 import { computeCafeOpenStatus } from "@/lib/cafeStatus";
 
 export default function CafeLandingPage() {
   const { cafeSlug } = useParams();
-  const cafe = cafeSlug ? getCafeBySlug(cafeSlug) : undefined;
+  const { data: cafe, isLoading, isError } = useCafeDetails(cafeSlug);
 
-  if (!cafe) {
+  if (isLoading) {
+    return (
+      <PageShell>
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-sm text-text-secondary">Loading caf&eacute;...</p>
+        </div>
+        <Footer />
+      </PageShell>
+    );
+  }
+
+  if (isError || !cafe) {
     return (
       <PageShell>
         <Header />
