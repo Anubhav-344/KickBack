@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import CafeListingCard from "../components/CafeListingCard";
 import ResourceTypeFilterChips from "../components/ResourceTypeFilterChips";
 import { computeCafeOpenStatus } from "@/lib/cafeStatus";
-import { useCafeListings } from "../hooks/useCafeListings";
+import { useCafeListings } from "../hooks/useCafeListing";
 
 export default function CafeDiscoveryPage() {
   const { data: cafes, isLoading, isError } = useCafeListings();
