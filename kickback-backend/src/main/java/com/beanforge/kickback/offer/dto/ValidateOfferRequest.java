@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,9 +17,15 @@ public class ValidateOfferRequest {
 
     @NotNull
     @Positive
-    private Long resourceId;
+    private Long offerId;
 
-    private Long gameId;
+    private String promoCode;
+
+    @NotNull
+    private Long cafeId;
+
+    @NotNull
+    private LocalDate date;
 
     @NotNull
     private LocalDateTime startTimestamp;
@@ -26,12 +33,6 @@ public class ValidateOfferRequest {
     @NotNull
     private LocalDateTime endTimestamp;
 
-    private Long offerId;
-
-    private String promoCode;
-
     @NotNull
-    @Positive
     private BigDecimal bookingAmount;
-
 }

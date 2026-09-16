@@ -50,6 +50,11 @@ export interface Cafe {
   averageRating: number;
   totalReviews: number;
   isOpenNow: boolean;
+  operatingWindowToday: {
+    openingMinutes: number;
+    closingMinutes: number;
+    isClosedToday: boolean;
+  };
   images: string[];
   address: CafeAddress;
   amenities: Amenity[];

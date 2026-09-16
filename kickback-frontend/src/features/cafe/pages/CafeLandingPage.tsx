@@ -11,7 +11,7 @@ import AmenitiesSection from "../components/AmenitiesSection";
 import AboutSection from "../components/AboutSection";
 import BookFloatingButton from "../components/BookFloatingButton";
 import { useCafeDetails } from "../hooks/useCafeDetails";
-import { computeCafeOpenStatus } from "@/lib/cafeStatus";
+import { computeCafeOpenStatus } from "@/lib/CafeStatus";
 
 export default function CafeLandingPage() {
   const { cafeSlug } = useParams();
