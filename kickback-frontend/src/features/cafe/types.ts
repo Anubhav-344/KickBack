@@ -1,4 +1,5 @@
 // src/features/cafe/types.ts
+import type { OperatingWindow } from "@/features/booking/types";
 
 export interface CafeAddress {
   addressLine1: string;
@@ -55,6 +56,7 @@ export interface Cafe {
   amenities: Amenity[];
   offers: Offer[];
   resourceTypes: ResourceTypeSummary[];
+  operatingWindowToday: OperatingWindow;
 }
 
 // Lighter-weight shape for the discovery/listing page — a card doesn't need
@@ -70,9 +72,5 @@ export interface CafeListing {
   startingHourlyRate: number;
   resourceTypeTags: string[]; // e.g. ["PS5", "VR", "Pool"] — for tag chips + filtering
   imageUrl?: string;
-  todayOperatingWindow: {
-    openingMinutes: number;
-    closingMinutes: number;
-    isClosedToday: boolean;
-  };
+  todayOperatingWindow: OperatingWindow;
 }

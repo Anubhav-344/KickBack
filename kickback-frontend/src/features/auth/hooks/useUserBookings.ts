@@ -2,29 +2,31 @@
 import { useQuery } from "@tanstack/react-query";
 import { mockDelay } from "@/lib/mockDelay";
 
+// Mirrors the backend's BookingSummaryResponse DTO, so this becomes a
+// straight swap once the endpoint exists.
 export interface UserBookingSummary {
-  bookingId: string;
+  bookingId: number;
   cafeName: string;
   cafeSlug: string;
   resourceName: string;
-  dateLabel: string;
-  startMinutes: number;
+  startTimestamp: string; // ISO LocalDateTime
+  endTimestamp: string;
   durationMinutes: number;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "EXPIRED" | "NO_SHOW";
   totalAmount: number;
 }
 
-// TEMPORARY: fixed mock list, replace with GET /users/me/bookings.
-// Written now (ahead of the real My Bookings page build in Phase 3) so
-// that page can be built directly against this hook from the start.
+// STILL MOCKED — BookingSummaryResponse exists as a DTO, but there's no
+// controller serving it. UserController only exposes GET/PATCH /api/users/me;
+// there's no /api/users/me/bookings (or /api/bookings) endpoint yet.
 const MOCK_USER_BOOKINGS: UserBookingSummary[] = [
   {
-    bookingId: "KB-20260722-0847",
+    bookingId: 1001,
     cafeName: "Respawn Lounge",
     cafeSlug: "respawn-lounge",
     resourceName: "PS5 - Unit 1",
-    dateLabel: "Today, 22 Jul",
-    startMinutes: 14 * 60,
+    startTimestamp: "2026-07-22T14:00:00",
+    endTimestamp: "2026-07-22T15:00:00",
     durationMinutes: 60,
     status: "CONFIRMED",
     totalAmount: 126,

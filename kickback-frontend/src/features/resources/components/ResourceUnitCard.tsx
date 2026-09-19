@@ -87,7 +87,7 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
           {unit.brand && <InfoRow label="Brand" value={unit.brand} />}
           {unit.maxPlayers && <InfoRow label="Players" value={`Up to ${unit.maxPlayers}`} />}
           {unit.games && unit.games.length > 0 && (
-            <InfoRow label="Games" value={unit.games.join(", ")} />
+            <InfoRow label="Games" value={unit.games.map((g) => g.gameName).join(", ")} />
           )}
           {unit.description && <InfoRow label="Specs" value={unit.description} />}
         </div>

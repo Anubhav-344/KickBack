@@ -2,33 +2,36 @@
 import { useMutation } from "@tanstack/react-query";
 import { mockDelay } from "@/lib/mockDelay";
 
-interface CreateHoldInput {
+export interface CreateHoldInput {
   resourceId: number;
-  game: string | null;
+  gameId: number | null;
   startMinutes: number;
   durationMinutes: number;
-  date: string;
+  date: string; // ISO yyyy-mm-dd
 }
 
 interface CreateHoldResult {
-  bookingId: string;
+  bookingId: number;
   holdExpiresAt: number; // epoch ms
 }
 
-// TEMPORARY: real version POSTs to /bookings, which performs the FOR UPDATE
-// transaction (see earlier design discussion on the race-condition fix) and
-// returns the actual hold_expires_at from the server. This mock always
-// "succeeds" — the real endpoint can also fail with 409 if the slot was
-// taken between the client's last check and this request, which callers
-// should already handle via axiosClient's existing 409 toast interceptor.
+// STILL MOCKED — there is no BookingController on the backend yet (the
+// CreateBookingRequest DTO exists, but nothing serves POST /api/bookings).
+//
+// When it lands, this becomes:
+//   axiosClient.post("/bookings", {
+//     resourceId, gameId, date,
+//     startTimestamp: `${date}T${hhmm(startMinutes)}:00`,
+//     endTimestamp:   `${date}T${hhmm(startMinutes + durationMinutes)}:00`,
+//   })
+// i.e. the backend wants ISO LocalDateTime pairs, not minutes/duration —
+// the conversion belongs here so the rest of the app keeps its simpler
+// minutes-since-midnight model.
 export function useCreateHold() {
   return useMutation({
-    mutationFn: (input: CreateHoldInput) =>
+    mutationFn: (_input: CreateHoldInput) =>
       mockDelay<CreateHoldResult>(
-        {
-          bookingId: `KB-MOCK-${Date.now()}`,
-          holdExpiresAt: Date.now() + 10 * 60 * 1000,
-        },
+        { bookingId: Date.now(), holdExpiresAt: Date.now() + 10 * 60 * 1000 },
         600
       ),
   });

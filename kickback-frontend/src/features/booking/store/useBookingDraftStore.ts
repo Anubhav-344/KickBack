@@ -4,13 +4,14 @@ import { snapDurationToStep, todayISO } from "@/lib/dateTime";
 
 interface BookingDraftState {
   resourceId: number | null;
-  game: string | null;
+  gameId: number | null;
+  gameName: string | null;
   selectedDate: string; // ISO yyyy-mm-dd
   startMinutes: number; // minutes since midnight
   durationMinutes: number;
 
   setResourceId: (id: number) => void;
-  setGame: (game: string | null) => void;
+  setGame: (game: { gameId: number; gameName: string } | null) => void;
   setSelectedDate: (date: string) => void;
   setStartMinutes: (minutes: number) => void;
   adjustDuration: (deltaMinutes: number) => void;
@@ -24,13 +25,15 @@ const DEFAULT_DURATION = 60; // 1 hour default, per most-common-booking-length d
 
 export const useBookingDraftStore = create<BookingDraftState>((set, get) => ({
   resourceId: null,
-  game: null,
+  gameId: null,
+  gameName: null,
   selectedDate: todayISO(),
   startMinutes: 14 * 60, // placeholder default; real usage sets this from context/now
   durationMinutes: DEFAULT_DURATION,
 
   setResourceId: (id) => set({ resourceId: id }),
-  setGame: (game) => set({ game }),
+  setGame: (game) =>
+    set({ gameId: game?.gameId ?? null, gameName: game?.gameName ?? null }),
   setSelectedDate: (date) => set({ selectedDate: date }),
   setStartMinutes: (minutes) => set({ startMinutes: minutes }),
 
@@ -48,7 +51,8 @@ export const useBookingDraftStore = create<BookingDraftState>((set, get) => ({
   reset: () =>
     set({
       resourceId: null,
-      game: null,
+      gameId: null,
+      gameName: null,
       selectedDate: todayISO(),
       startMinutes: 14 * 60,
       durationMinutes: DEFAULT_DURATION,

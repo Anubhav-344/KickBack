@@ -7,16 +7,31 @@ import Footer from "@/components/layout/Footer";
 import ResourceBreadcrumb from "../components/ResourceBreadcrumb";
 import ResourceUnitCard from "../components/ResourceUnitCard";
 import GameFilter from "../components/GameFilter";
-import { getCafeBySlug, getUnitsByResourceType, getResourceTypeById } from "@/mocks/cafes";
+import { useCafeDetails } from "@/features/cafe/hooks/useCafeDetails";
+import { useResources } from "../hooks/useResources";
 
 export default function ResourceSelectionPage() {
   const { cafeSlug, resourceTypeId } = useParams();
-  const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
 
-  const cafe = cafeSlug ? getCafeBySlug(cafeSlug) : undefined;
   const typeId = Number(resourceTypeId);
-  const currentResourceType = cafeSlug ? getResourceTypeById(cafeSlug, typeId) : undefined;
-  const units = cafeSlug ? getUnitsByResourceType(cafeSlug, typeId) : [];
+  const { data: cafe, isLoading: cafeLoading } = useCafeDetails(cafeSlug);
+  const { data: units, isLoading: unitsLoading } = useResources(cafeSlug, typeId);
+
+  const currentResourceType = cafe?.resourceTypes.find((rt) => rt.resourceTypeId === typeId);
+  const isLoading = cafeLoading || unitsLoading;
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-sm text-text-secondary">Loading...</p>
+        </div>
+        <Footer />
+      </PageShell>
+    );
+  }
 
   if (!cafe || !currentResourceType) {
     return (
@@ -38,10 +53,16 @@ export default function ResourceSelectionPage() {
     );
   }
 
-  const allGames = Array.from(new Set(units.flatMap((u) => u.games ?? [])));
-  const filteredUnits = selectedGame
-    ? units.filter((u) => u.games?.includes(selectedGame))
-    : units;
+  const allUnits = units ?? [];
+
+  // Dedupe games by gameId across all units of this type.
+  const allGames = Array.from(
+    new Map(allUnits.flatMap((u) => u.games ?? []).map((g) => [g.gameId, g])).values()
+  );
+
+  const filteredUnits = selectedGameId
+    ? allUnits.filter((u) => u.games?.some((g) => g.gameId === selectedGameId))
+    : allUnits;
 
   return (
     <PageShell>
@@ -57,8 +78,8 @@ export default function ResourceSelectionPage() {
         <span className="text-sm font-medium text-text-secondary">Filters</span>
         <GameFilter
           games={allGames}
-          selectedGame={selectedGame}
-          onSelect={setSelectedGame}
+          selectedGameId={selectedGameId}
+          onSelect={setSelectedGameId}
         />
       </div>
 

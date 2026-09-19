@@ -3,13 +3,15 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Gamepad2, ChevronDown } from "lucide-react";
 import BottomSheet from "@/components/ui/BottomSheet";
 import { useBookingDraftStore } from "../store/useBookingDraftStore";
+import type { GameOption } from "@/features/resources/types";
 
 interface GameSelectFieldProps {
-  games: string[];
+  games: GameOption[];
 }
 
 export default function GameSelectField({ games }: GameSelectFieldProps) {
-  const game = useBookingDraftStore((s) => s.game);
+  const gameId = useBookingDraftStore((s) => s.gameId);
+  const gameName = useBookingDraftStore((s) => s.gameName);
   const setGame = useBookingDraftStore((s) => s.setGame);
 
   if (games.length === 0) return null;
@@ -26,7 +28,7 @@ export default function GameSelectField({ games }: GameSelectFieldProps) {
                 <Gamepad2 size={14} className="text-text-primary" />
               </span>
               <span className="font-display font-semibold text-base text-text-primary">
-                {game ?? "Select a game"}
+                {gameName ?? "Select a game"}
               </span>
             </span>
             <ChevronDown size={16} className="text-text-secondary" />
@@ -35,16 +37,16 @@ export default function GameSelectField({ games }: GameSelectFieldProps) {
       >
         <div className="flex flex-col gap-2">
           {games.map((g) => (
-            <Dialog.Close asChild key={g}>
+            <Dialog.Close asChild key={g.gameId}>
               <button
-                onClick={() => setGame(g)}
+                onClick={() => setGame({ gameId: g.gameId, gameName: g.gameName })}
                 className={`text-left px-3.5 py-2.5 rounded-card border transition-colors ${
-                  game === g
+                  gameId === g.gameId
                     ? "border-accent bg-accent/10 text-text-primary"
                     : "border-border-subtle bg-bg-raised text-text-secondary"
                 }`}
               >
-                {g}
+                {g.gameName}
               </button>
             </Dialog.Close>
           ))}

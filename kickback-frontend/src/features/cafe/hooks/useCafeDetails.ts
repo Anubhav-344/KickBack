@@ -1,15 +1,16 @@
 // src/features/cafe/hooks/useCafeDetails.ts
 import { useQuery } from "@tanstack/react-query";
-import { getCafeBySlug } from "@/mocks/cafes";
-import { mockDelay } from "@/lib/mockDelay";
+import { cafeApi } from "../api";
 
-// TEMPORARY: swap for `axiosClient.get(`/cafes/${slug}`)`. Returns null
-// (not throwing) when not found, so pages can render a "not found" state
-// via `data === null` rather than an error boundary.
+// LIVE — GET /api/cafes/{slug}
+// The backend returns 404 for an unknown slug, which React Query surfaces
+// as isError — CafeLandingPage already renders its "not found" state from
+// that, so no special-casing is needed here.
 export function useCafeDetails(slug: string | undefined) {
   return useQuery({
     queryKey: ["cafe", slug],
-    queryFn: () => mockDelay(slug ? getCafeBySlug(slug) ?? null : null),
+    queryFn: () => cafeApi.getCafeBySlug(slug!),
     enabled: !!slug,
+    retry: false, // don't retry a 404
   });
 }
