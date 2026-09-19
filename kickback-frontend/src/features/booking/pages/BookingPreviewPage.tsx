@@ -1,7 +1,8 @@
 // src/features/booking/pages/BookingPreviewPage.tsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import toast from "react-hot-toast";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -12,73 +13,92 @@ import OfferSelector from "@/features/offers/components/OfferSelector";
 import PaymentMethodPicker from "@/features/payment/components/PaymentMethodPicker";
 import type { PaymentMethod } from "@/features/payment/types";
 import type { Offer } from "@/features/cafe/types";
-import { computeOfferDiscount, TAX_RATE } from "@/lib/offers";
-import toast from "react-hot-toast";
-
-// TEMPORARY mock — replace with useBookingDetails(bookingId), which returns
-// the PENDING booking created when "Book" was pressed on the previous page,
-// including its real hold_expires_at from the server.
-const MOCK_BOOKING = {
-  cafeName: "Respawn Lounge",
-  resourceName: "PS5 - Unit 1",
-  game: "FIFA 24",
-  dateLabel: "Today, 22 Jul",
-  startMinutes: 14 * 60,
-  durationMinutes: 60,
-  hourlyRate: 150,
-};
-
-const MOCK_OFFERS: Offer[] = [
-  {
-    offerId: 1,
-    title: "Weekday happy hour",
-    promoCode: "HAPPY20",
-    offerType: "PERCENTAGE_DISCOUNT",
-    discountType: "PERCENTAGE",
-    discountValue: 20,
-    validFrom: "2026-01-01",
-    validTo: "2026-12-31",
-    isActive: true,
-  },
-  {
-    offerId: 2,
-    title: "Squad session",
-    promoCode: "SQUAD100",
-    offerType: "FLAT_DISCOUNT",
-    discountType: "FIXED",
-    discountValue: 100,
-    validFrom: "2026-01-01",
-    validTo: "2026-12-31",
-    isActive: true,
-  },
-];
+import type { ValidateOfferResult } from "@/features/offers/api";
+import { useBookingDetails } from "../hooks/useBookingDetails";
+import { useCafeDetails } from "@/features/cafe/hooks/useCafeDetails";
+import { useValidateOffer } from "@/features/offers/hooks/useValidateOffer";
+import { toISODateTime } from "@/lib/dateTime";
 
 export default function BookingPreviewPage() {
   const navigate = useNavigate();
-  const [appliedOffer, setAppliedOffer] = useState<Offer | null>(null);
+  const { bookingId } = useParams();
+
+  const { data: booking, isLoading: bookingLoading } = useBookingDetails(bookingId);
+  // LIVE — feeds the offer list (cafe.offers) for the "select from
+  // available offers" sheet, plus the numeric cafeId the validate
+  // endpoint requires.
+  const { data: cafe } = useCafeDetails(booking?.cafeSlug);
+
+  const [appliedResult, setAppliedResult] = useState<ValidateOfferResult | null>(null);
   const [promoInput, setPromoInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("UPI");
 
-  // Placeholder hold expiry: 10 minutes from page load. Real version reads
-  // this from the server's bookings.hold_expires_at, not a client timer.
-  const [holdExpiresAt] = useState(() => Date.now() + 10 * 60 * 1000);
+  const validateOffer = useValidateOffer();
 
-  const endMinutes = MOCK_BOOKING.startMinutes + MOCK_BOOKING.durationMinutes;
-  const subtotal = Math.round((MOCK_BOOKING.hourlyRate / 60) * MOCK_BOOKING.durationMinutes);
-  const discount = appliedOffer ? computeOfferDiscount(appliedOffer, subtotal) : 0;
-  const tax = Math.round((subtotal - discount) * TAX_RATE);
-  const total = subtotal - discount + tax;
+  // STILL MOCKED — see useCreateHold's comment; the actual hold_expires_at
+  // will come from the server response of POST /bookings once that's safe
+  // to rely on.
+  const [holdExpiresAt] = useState(() => booking?.holdExpiresAt ?? Date.now() + 10 * 60 * 1000);
+
+  if (bookingLoading || !booking) {
+    return (
+      <PageShell>
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-sm text-text-secondary">Loading...</p>
+        </div>
+        <Footer />
+      </PageShell>
+    );
+  }
+
+  const endMinutes = booking.startMinutes + booking.durationMinutes;
+  const subtotal = Math.round((booking.hourlyRate / 60) * booking.durationMinutes);
+
+  // Once an offer is validated server-side, its numbers are authoritative —
+  // we display exactly what the backend computed rather than re-deriving
+  // discount/tax client-side (which is why PriceBreakdownCard's "tax" line
+  // here is back-derived from finalAmount, since /offers/validate doesn't
+  // return a separate tax figure).
+  const discount = appliedResult?.discountAmount ?? 0;
+  const total = appliedResult?.valid ? appliedResult.finalAmount : subtotal;
+  const tax = Math.max(0, total - subtotal + discount);
+
+  const runValidation = (offer: Offer) => {
+    if (!cafe) return;
+    validateOffer.mutate(
+      {
+        offerId: offer.offerId,
+        promoCode: offer.promoCode,
+        cafeId: cafe.cafeId,
+        date: booking.date,
+        startTimestamp: toISODateTime(booking.date, booking.startMinutes),
+        endTimestamp: toISODateTime(booking.date, endMinutes),
+        bookingAmount: subtotal,
+      },
+      {
+        onSuccess: (result) => {
+          if (result.valid) {
+            setAppliedResult(result);
+            toast.success(`${result.promoCode ?? result.title} applied`);
+          } else {
+            toast.error(result.message ?? "This offer isn't valid for this booking");
+          }
+        },
+        onError: () => toast.error("Couldn't validate offer. Please try again."),
+      }
+    );
+  };
 
   const handleApplyCode = () => {
-    const match = MOCK_OFFERS.find(
+    const match = cafe?.offers.find(
       (o) => o.promoCode?.toLowerCase() === promoInput.trim().toLowerCase()
     );
-    if (match) {
-      setAppliedOffer(match);
-      toast.success(`${match.promoCode} applied`);
-    } else {
+    if (!match) {
       toast.error("Invalid or expired code");
+      return;
     }
+    runValidation(match);
   };
 
   const handleExpire = () => {
@@ -87,12 +107,13 @@ export default function BookingPreviewPage() {
   };
 
   const handlePay = () => {
-    // Next: useInitiatePayment() -> Razorpay checkout -> on the SDK's
-    // success callback, update booking to CONFIRMED server-side, THEN
-    // navigate here. Navigating immediately (as below) is a placeholder
-    // until that real payment round-trip exists.
+    // STILL MOCKED — real version calls useInitiatePayment() (POST
+    // /payments then PATCH /payments/{id}/confirm), which requires a real
+    // bookingId from a real POST /bookings call. Wiring this now against a
+    // fake bookingId would just 404 against the real endpoint, so this
+    // stays a placeholder until booking creation itself is safe to use.
     toast.success("Payment successful!");
-    navigate("/bookings/KB-20260722-0847/confirmation");
+    navigate(`/bookings/${booking.bookingId}/confirmation`);
   };
 
   return (
@@ -115,13 +136,13 @@ export default function BookingPreviewPage() {
           Summary
         </div>
         <BookingSummaryCard
-          cafeName={MOCK_BOOKING.cafeName}
-          resourceName={MOCK_BOOKING.resourceName}
-          game={MOCK_BOOKING.game}
-          dateLabel={MOCK_BOOKING.dateLabel}
-          startMinutes={MOCK_BOOKING.startMinutes}
+          cafeName={booking.cafeName}
+          resourceName={booking.resourceName}
+          game={booking.game}
+          dateLabel={booking.dateLabel}
+          startMinutes={booking.startMinutes}
           endMinutes={endMinutes}
-          durationMinutes={MOCK_BOOKING.durationMinutes}
+          durationMinutes={booking.durationMinutes}
         />
       </div>
 
@@ -130,14 +151,13 @@ export default function BookingPreviewPage() {
           Offer
         </div>
 
-        {appliedOffer && (
+        {appliedResult?.valid && (
           <div className="flex items-center justify-between bg-state-available/10 border border-state-available/30 rounded-lg px-3.5 py-2.5 mb-2.5">
             <span className="text-xs font-medium text-state-available">
-              {appliedOffer.promoCode} applied &mdash; {appliedOffer.discountValue}
-              {appliedOffer.discountType === "PERCENTAGE" ? "%" : "\u20B9"} off
+              {appliedResult.promoCode ?? appliedResult.title} applied
             </span>
             <button
-              onClick={() => setAppliedOffer(null)}
+              onClick={() => setAppliedResult(null)}
               className="text-[11px] text-text-secondary"
             >
               Remove
@@ -154,21 +174,24 @@ export default function BookingPreviewPage() {
           />
           <button
             onClick={handleApplyCode}
-            className="bg-bg-raised border border-border-subtle rounded-lg px-4 text-sm font-semibold text-text-primary"
+            disabled={validateOffer.isPending}
+            className="bg-bg-raised border border-border-subtle rounded-lg px-4 text-sm font-semibold text-text-primary disabled:opacity-60"
           >
-            Apply
+            {validateOffer.isPending ? "..." : "Apply"}
           </button>
         </div>
 
-        <OfferSelector
-          offers={MOCK_OFFERS}
-          onSelect={(offer) => setAppliedOffer(offer)}
-          trigger={
-            <button className="text-xs font-medium text-accent-hover">
-              Select from available offers &#8250;
-            </button>
-          }
-        />
+        {cafe && cafe.offers.length > 0 && (
+          <OfferSelector
+            offers={cafe.offers}
+            onSelect={runValidation}
+            trigger={
+              <button className="text-xs font-medium text-accent-hover">
+                Select from available offers &#8250;
+              </button>
+            }
+          />
+        )}
       </div>
 
       <div className="px-4 py-4 border-b border-border-subtle">
@@ -178,7 +201,7 @@ export default function BookingPreviewPage() {
         <PriceBreakdownCard
           subtotal={subtotal}
           discount={discount}
-          discountLabel={appliedOffer?.promoCode}
+          discountLabel={appliedResult?.promoCode ?? undefined}
           tax={tax}
           total={total}
         />
@@ -200,7 +223,7 @@ export default function BookingPreviewPage() {
         </button>
       </div>
 
-      <Footer cafeName={MOCK_BOOKING.cafeName} locationLabel="Bhopal" />
+      <Footer cafeName={booking.cafeName} locationLabel="Bhopal" />
     </PageShell>
   );
 }

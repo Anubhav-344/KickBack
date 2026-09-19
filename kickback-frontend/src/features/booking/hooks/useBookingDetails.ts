@@ -8,6 +8,7 @@ export interface BookingDetails {
   cafeSlug: string;
   resourceName: string;
   game?: string | null;
+  date: string; // ISO yyyy-MM-dd — needed to build real API payloads (e.g. offer validation) even while this hook itself is mocked
   dateLabel: string;
   startMinutes: number;
   durationMinutes: number;
@@ -32,6 +33,7 @@ export function useBookingDetails(bookingId: string | undefined) {
         cafeSlug: "respawn-lounge",
         resourceName: "PS5 - Unit 1",
         game: "FIFA 24",
+        date: "2026-07-22",
         dateLabel: "Today, 22 Jul",
         startMinutes: 14 * 60,
         durationMinutes: 60,

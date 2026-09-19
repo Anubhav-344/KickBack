@@ -68,6 +68,18 @@ export function formatDateLabel(isoDate: string): string {
   return `${d} ${MONTHS[m - 1]}`;
 }
 
+// Combines an ISO date with minutes-since-midnight into the full ISO
+// LocalDateTime string the backend expects (e.g. "2026-07-22T14:00:00").
+// Uses real Date arithmetic (not string math) so totalMinutes >= 1440
+// correctly rolls over to the next calendar date for overnight bookings.
+export function toISODateTime(dateISO: string, totalMinutes: number): string {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  const base = new Date(y, m - 1, d, 0, 0, 0);
+  base.setMinutes(base.getMinutes() + totalMinutes);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}T${pad(base.getHours())}:${pad(base.getMinutes())}:00`;
+}
+
 // Snaps a duration to the nearest valid 15-minute increment, minimum 15 min.
 export function snapDurationToStep(minutes: number, stepMinutes = 15): number {
   const snapped = Math.round(minutes / stepMinutes) * stepMinutes;
