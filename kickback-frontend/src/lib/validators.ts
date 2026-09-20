@@ -22,3 +22,12 @@ export const signupSchema = z
     path: ["confirmPassword"],
   });
 export type SignupFormValues = z.infer<typeof signupSchema>;
+
+export const profileSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(100),
+  lastName: z.string().max(100).optional(),
+  email: z.string().email("Enter a valid email address"),
+  phone: z.string().regex(/^\d{10}$/, "Enter a valid 10-digit phone number"),
+  username: z.string().max(30).optional(),
+});
+export type ProfileFormValues = z.infer<typeof profileSchema>;

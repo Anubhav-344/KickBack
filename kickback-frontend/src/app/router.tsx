@@ -12,6 +12,7 @@ import SupportPage from "@/features/auth/pages/SupportPage";
 import BookingConfirmationPage from "@/features/booking/pages/BookingConfirmationPage";
 import CafeDiscoveryPage from "@/features/cafe/pages/CafeDiscoveryPage";
 import RequireAuth from "@/features/auth/components/RequireAuth";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 // Single-cafe MVP: root redirects straight to the (only) cafe's page.
 // When multi-cafe launches, "/" becomes a discovery page instead —
@@ -62,6 +63,10 @@ export const router = createBrowserRouter([
   { 
     path: "/bookings/:bookingId/confirmation", 
     element: <RequireAuth><BookingConfirmationPage /></RequireAuth> 
+  },
+  { 
+    path: "*", 
+    element: <NotFoundPage /> 
   },
    
 ]);

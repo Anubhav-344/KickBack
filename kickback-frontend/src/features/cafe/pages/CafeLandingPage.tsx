@@ -10,6 +10,7 @@ import ResourceTypeGrid from "@/features/resources/components/ResourceTypeGrid";
 import AmenitiesSection from "../components/AmenitiesSection";
 import AboutSection from "../components/AboutSection";
 import BookFloatingButton from "../components/BookFloatingButton";
+import ReviewsSection from "@/features/reviews/components/ReviewsSection";
 import { useCafeDetails } from "../hooks/useCafeDetails";
 import { computeCafeOpenStatus } from "@/lib/cafeStatus";
 
@@ -70,6 +71,7 @@ export default function CafeLandingPage() {
       <OfferSlider offers={cafe.offers} />
       <ResourceTypeGrid resourceTypes={cafe.resourceTypes} />
       <AmenitiesSection amenities={cafe.amenities} />
+      <ReviewsSection cafeSlug={cafe.slug} />
       <AboutSection cafe={cafe} />
       <Footer cafeName={cafe.name} locationLabel={locationLabel} />
 
