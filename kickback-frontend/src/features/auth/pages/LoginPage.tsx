@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
+import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { loginSchema, type LoginFormValues } from "@/lib/validators";
 import { useLogin } from "../hooks/useAuth";
@@ -60,13 +61,14 @@ export default function LoginPage() {
             error={errors.password?.message}
           />
 
-          <button
+          <Button
             type="submit"
-            disabled={loginMutation.isPending}
-            className="w-full bg-accent text-bg-base font-semibold text-sm py-3.5 rounded-card shadow-accent-glow mt-2 disabled:opacity-60 transition-opacity"
+            isLoading={loginMutation.isPending}
+            loadingText="Logging in..."
+            className="mt-2"
           >
-            {loginMutation.isPending ? "Logging in..." : "Log in"}
-          </button>
+            Log in
+          </Button>
         </form>
 
         <p className="text-center text-sm text-text-secondary mt-6">

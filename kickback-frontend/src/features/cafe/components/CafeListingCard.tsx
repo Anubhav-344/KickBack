@@ -18,7 +18,7 @@ export default function CafeListingCard({ cafe }: CafeListingCardProps) {
   return (
     <button
       onClick={() => navigate(`/cafes/${cafe.slug}`)}
-      className={`text-left bg-bg-surface border border-border-subtle rounded-2xl overflow-hidden transition-opacity ${
+      className={`text-left bg-bg-surface border border-border-subtle rounded-2xl overflow-hidden hover:border-accent/40 active:scale-[0.99] transition ${
         status.isOpenNow ? "" : "opacity-55"
       }`}
     >

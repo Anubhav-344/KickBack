@@ -1,12 +1,13 @@
 package com.beanforge.kickback.booking.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import com.beanforge.kickback.enums.BookingStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -22,5 +23,6 @@ public class BookingSummaryResponse {
     private long durationMinutes;
     private BookingStatus status;
     private BigDecimal totalAmount;
+    private boolean hasReview;
 
 }

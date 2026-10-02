@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { snapDurationToStep, todayISO } from "@/lib/dateTime";
 
 interface BookingDraftState {
+  cafeSlug: string | null;
   resourceId: number | null;
   gameId: number | null;
   gameName: string | null;
@@ -10,7 +11,7 @@ interface BookingDraftState {
   startMinutes: number; // minutes since midnight
   durationMinutes: number;
 
-  setResourceId: (id: number) => void;
+  setResource: (cafeSlug: string, resourceId: number) => void;
   setGame: (game: { gameId: number; gameName: string } | null) => void;
   setSelectedDate: (date: string) => void;
   setStartMinutes: (minutes: number) => void;
@@ -24,6 +25,7 @@ interface BookingDraftState {
 const DEFAULT_DURATION = 60; // 1 hour default, per most-common-booking-length decision
 
 export const useBookingDraftStore = create<BookingDraftState>((set, get) => ({
+  cafeSlug: null,
   resourceId: null,
   gameId: null,
   gameName: null,
@@ -31,7 +33,10 @@ export const useBookingDraftStore = create<BookingDraftState>((set, get) => ({
   startMinutes: 14 * 60, // placeholder default; real usage sets this from context/now
   durationMinutes: DEFAULT_DURATION,
 
-  setResourceId: (id) => set({ resourceId: id }),
+  // cafeSlug and resourceId always get set together — the checkout page
+  // (which has no URL params of its own) needs cafeSlug to fetch café/offer
+  // data, since booking creation is now deferred until Pay, not Book.
+  setResource: (cafeSlug, resourceId) => set({ cafeSlug, resourceId }),
   setGame: (game) =>
     set({ gameId: game?.gameId ?? null, gameName: game?.gameName ?? null }),
   setSelectedDate: (date) => set({ selectedDate: date }),
@@ -50,6 +55,7 @@ export const useBookingDraftStore = create<BookingDraftState>((set, get) => ({
 
   reset: () =>
     set({
+      cafeSlug: null,
       resourceId: null,
       gameId: null,
       gameName: null,

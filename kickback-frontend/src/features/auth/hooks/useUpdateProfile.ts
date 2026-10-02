@@ -11,6 +11,7 @@ export interface UserProfile {
   phone: string;
   username?: string;
   role: "USER" | "OWNER" | "ADMIN";
+  avatarId?: number;
 }
 
 export interface UpdateProfileInput {
@@ -19,6 +20,7 @@ export interface UpdateProfileInput {
   email: string;
   phone: string;
   username?: string;
+  avatarId?: number;
 }
 
 // LIVE — GET /api/users/me (requires auth)
@@ -31,9 +33,8 @@ export function useUserProfile() {
   });
 }
 
-// LIVE — PATCH /api/users/me
+// LIVE — PATCH /api/users/me (now includes avatarId)
 export function useUpdateProfile() {
-  const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
   const login = useAuthStore((s) => s.login);
 
@@ -42,7 +43,8 @@ export function useUpdateProfile() {
       axiosClient.patch<UserProfile>("/users/me", input).then((r) => r.data),
     onSuccess: (updated) => {
       // Drive the store from the SERVER response, not the input, in case
-      // the backend normalizes anything.
+      // the backend normalizes anything — this now includes avatarId too,
+      // so the header's avatar stays correct after any save.
       if (token) {
         login(
           {
@@ -51,11 +53,11 @@ export function useUpdateProfile() {
             lastName: updated.lastName,
             email: updated.email,
             role: updated.role,
+            avatarId: updated.avatarId,
           },
           token
         );
       }
-      void user;
     },
   });
 }

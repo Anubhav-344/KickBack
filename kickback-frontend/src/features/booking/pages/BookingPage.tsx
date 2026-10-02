@@ -1,6 +1,7 @@
 // src/features/booking/pages/BookingPage.tsx
 import { useEffect } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -10,20 +11,20 @@ import GameSelectField from "../components/GameSelectField";
 import StartTimeInput from "../components/StartTimeInput";
 import DurationEndTimeFields from "../components/DurationEndTimeFields";
 import PriceSummary from "../components/PriceSummary";
-import { useBookingDraftStore } from "../store/useBookingDraftStore";
+import { useBookingDraftStore, useBookingEndMinutes } from "../store/useBookingDraftStore";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCafeDetails } from "@/features/cafe/hooks/useCafeDetails";
 import { useResourceUnit } from "@/features/resources/hooks/useResources";
 import { useAvailability } from "../hooks/useAvailability";
-import { useCreateHold } from "../hooks/useCreateHold";
-import toast from "react-hot-toast";
+import { useCreateBooking } from "../hooks/useCreateBooking";
+import { toISODateTime } from "@/lib/dateTime";
 
 export default function BookingPage() {
   const { cafeSlug, resourceId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const setResourceId = useBookingDraftStore((s) => s.setResourceId);
+  const setResource = useBookingDraftStore((s) => s.setResource);
   const currentDraftResourceId = useBookingDraftStore((s) => s.resourceId);
   const reset = useBookingDraftStore((s) => s.reset);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -31,33 +32,37 @@ export default function BookingPage() {
   const gameId = useBookingDraftStore((s) => s.gameId);
   const selectedDate = useBookingDraftStore((s) => s.selectedDate);
   const startMinutes = useBookingDraftStore((s) => s.startMinutes);
-  const durationMinutes = useBookingDraftStore((s) => s.durationMinutes);
+  const endMinutes = useBookingEndMinutes();
 
   const numericResourceId = resourceId ? Number(resourceId) : undefined;
 
   const { data: cafe, isLoading: cafeLoading } = useCafeDetails(cafeSlug);
   const { data: unit, isLoading: unitLoading } = useResourceUnit(numericResourceId);
-  // Including selectedDate in this hook's query key means picking a
-  // different date correctly triggers a refetch — the mock data doesn't
-  // vary by date yet, but the wiring is already correct for when it does.
   const { data: availability, isLoading: availabilityLoading } = useAvailability(
     numericResourceId,
     selectedDate
   );
 
-  const createHold = useCreateHold();
+  const createBooking = useCreateBooking();
 
   // Only reset the draft when switching to a DIFFERENT resource. Without
   // this guard, returning here from the login redirect (same resourceId)
   // would wipe the game/time/duration the guest had already picked.
   useEffect(() => {
     const newId = numericResourceId ?? null;
-    if (newId !== null && newId !== currentDraftResourceId) {
+    if (newId !== null && newId !== currentDraftResourceId && cafeSlug) {
       reset();
-      setResourceId(newId);
+      setResource(cafeSlug, newId);
     }
-  }, [numericResourceId, currentDraftResourceId, reset, setResourceId]);
+  }, [numericResourceId, currentDraftResourceId, cafeSlug, reset, setResource]);
 
+  // "Book" creates the real hold immediately (back to the original design)
+  // — the resource row gets locked server-side right away, so the slot is
+  // actually protected while the user is still on the Preview page picking
+  // an offer and payment method. Any offer chosen there goes through
+  // PATCH /bookings/{id}/offer against this same booking, so Pay never
+  // needs to create anything new — it just charges whatever total that
+  // endpoint most recently returned.
   const handleBook = () => {
     if (!isAuthenticated) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
@@ -65,23 +70,22 @@ export default function BookingPage() {
     }
     if (!numericResourceId) return;
 
-    createHold.mutate(
+    createBooking.mutate(
       {
         resourceId: numericResourceId,
         gameId,
-        startMinutes,
-        durationMinutes,
         date: selectedDate,
+        startTimestamp: toISODateTime(selectedDate, startMinutes),
+        endTimestamp: toISODateTime(selectedDate, endMinutes),
       },
       {
-        onSuccess: (result) => {
-          navigate(`/bookings/${result.bookingId}/preview`);
+        onSuccess: (booking) => {
+          navigate(`/bookings/${booking.bookingId}/preview`);
         },
         onError: () => {
-          // Real backend can return 409 here if the slot was taken between
-          // the client's last check and this request — axiosClient's
-          // interceptor already toasts that case; this covers other failures.
-          toast.error("Couldn't hold this slot. Please try again.");
+          // 409 (slot taken) already gets its own toast from axiosClient's
+          // global interceptor; this covers other validation failures.
+          toast.error("Couldn't hold this slot. Please try again.", { id: "booking-error" });
         },
       }
     );
@@ -121,6 +125,12 @@ export default function BookingPage() {
     );
   }
 
+  // Different games can support different player counts on the same unit
+  // (e.g. a PS5 might allow 1-4 for FIFA but 1-2 for another title) — look
+  // up the selected game's own range, falling back to the resource's own
+  // maxPlayers when no game is picked yet.
+  const selectedGame = unit.games?.find((g) => g.gameId === gameId);
+
   return (
     <PageShell>
       <Header />
@@ -129,7 +139,8 @@ export default function BookingPage() {
         cafeName={cafe.name}
         unitName={unit.resourceName}
         hourlyRate={unit.hourlyRate}
-        maxPlayers={unit.maxPlayers}
+        maxPlayers={selectedGame?.maxPlayers ?? unit.maxPlayers}
+        minPlayers={selectedGame?.minPlayers}
         imageUrl={unit.imageUrl}
       />
 

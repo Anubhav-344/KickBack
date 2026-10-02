@@ -1,5 +1,7 @@
 // src/features/auth/pages/MyBookingsPage.tsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -11,6 +13,7 @@ type Tab = "upcoming" | "past";
 const UPCOMING_STATUSES = new Set(["PENDING", "CONFIRMED"]);
 
 export default function MyBookingsPage() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("upcoming");
   const { data: bookings, isLoading } = useUserBookings();
 
@@ -22,10 +25,16 @@ export default function MyBookingsPage() {
     <PageShell>
       <Header />
 
-      <div className="px-4 pt-5">
-        <h1 className="font-display font-semibold text-2xl text-text-primary mb-4">
+      <div className="flex items-center gap-2.5 px-4 pt-5">
+        <button onClick={() => navigate(-1)} aria-label="Go back">
+          <ArrowLeft size={18} className="text-text-secondary" />
+        </button>
+        <h1 className="font-display font-semibold text-2xl text-text-primary">
           My Bookings
         </h1>
+      </div>
+
+      <div className="px-4 pt-4">
 
         <div className="flex gap-2 mb-4">
           <TabButton label="Upcoming" active={tab === "upcoming"} onClick={() => setTab("upcoming")} />

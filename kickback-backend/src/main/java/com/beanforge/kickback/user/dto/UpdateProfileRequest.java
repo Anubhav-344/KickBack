@@ -1,6 +1,8 @@
 package com.beanforge.kickback.user.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -31,5 +33,12 @@ public class UpdateProfileRequest {
 
     @Size(max = 30, message = "Username must not exceed 30 characters")
     private String username;
+
+    // Optional — null means "don't change the current avatar". 1-8 matches
+    // the frontend's fixed AVATAR_PRESETS gallery; update both sides together
+    // if that gallery's size ever changes.
+    @Min(value = 1, message = "Invalid avatar selection")
+    @Max(value = 8, message = "Invalid avatar selection")
+    private Integer avatarId;
 
 }

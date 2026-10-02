@@ -3,18 +3,19 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as Dialog from "@radix-ui/react-dialog";
 import BottomSheet from "@/components/ui/BottomSheet";
+import Badge from "@/components/ui/Badge";
 import { formatMinutesAsTime } from "@/lib/dateTime";
 import { useCancelBooking, type UserBookingSummary } from "../hooks/useUserBookings";
 import ReviewFormSheet from "@/features/reviews/components/ReviewFormSheet";
 import toast from "react-hot-toast";
 
-const STATUS_STYLES: Record<UserBookingSummary["status"], string> = {
-  PENDING: "bg-state-pending/15 text-state-pending",
-  CONFIRMED: "bg-state-available/15 text-state-available",
-  COMPLETED: "bg-bg-raised text-text-secondary",
-  CANCELLED: "bg-state-error/10 text-state-error",
-  EXPIRED: "bg-bg-raised text-text-secondary",
-  NO_SHOW: "bg-state-error/10 text-state-error",
+const STATUS_TONE: Record<UserBookingSummary["status"], "available" | "pending" | "error" | "neutral"> = {
+  PENDING: "pending",
+  CONFIRMED: "available",
+  COMPLETED: "neutral",
+  CANCELLED: "error",
+  EXPIRED: "neutral",
+  NO_SHOW: "error",
 };
 
 function parseTimestamp(iso: string) {
@@ -45,7 +46,13 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
         toast.success("Booking cancelled");
         setConfirmOpen(false);
       },
-      onError: () => toast.error("Couldn't cancel booking. Please try again."),
+      onError: (err) => {
+        const message =
+          err && typeof err === "object" && "response" in err
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
+        toast.error(message ?? "Couldn't cancel booking. Please try again.");
+      },
     });
   };
 
@@ -61,11 +68,9 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
           </div>
           <div className="text-xs text-text-secondary mt-0.5">{booking.resourceName}</div>
         </button>
-        <span
-          className={`text-[10px] font-medium px-2 py-1 rounded-full flex-shrink-0 ${STATUS_STYLES[booking.status]}`}
-        >
+        <Badge tone={STATUS_TONE[booking.status]} className="flex-shrink-0">
           {booking.status}
-        </span>
+        </Badge>
       </div>
 
       <div className="text-xs text-text-secondary mt-2.5 tabular-nums">

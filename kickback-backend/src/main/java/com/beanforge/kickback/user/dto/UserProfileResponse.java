@@ -16,5 +16,6 @@ public class UserProfileResponse {
     private String phone;
     private String username;
     private String role;
+    private Integer avatarId;
 
 }

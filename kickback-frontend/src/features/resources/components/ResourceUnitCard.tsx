@@ -1,13 +1,14 @@
 // src/features/resources/components/ResourceUnitCard.tsx
 import { useNavigate, useParams } from "react-router-dom";
 import BottomSheet from "@/components/ui/BottomSheet";
+import Badge from "@/components/ui/Badge";
 import type { ResourceUnit } from "../types";
 
-const STATUS_STYLES: Record<string, string> = {
-  AVAILABLE: "bg-state-available/15 text-state-available",
-  BOOKED: "bg-state-booked/20 text-text-secondary",
-  MAINTENANCE: "bg-state-booked/20 text-text-secondary",
-  OUT_OF_SERVICE: "bg-state-error/15 text-state-error",
+const STATUS_TONE: Record<string, "available" | "muted" | "error"> = {
+  AVAILABLE: "available",
+  BOOKED: "muted",
+  MAINTENANCE: "muted",
+  OUT_OF_SERVICE: "error",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -38,8 +39,10 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
           navigate(`/cafes/${cafeSlug}/resources/${unit.resourceId}/book`)
         }
         disabled={!isSelectable}
-        className={`w-full flex items-stretch text-left transition-transform ${
-          isSelectable ? "active:scale-[0.98]" : "opacity-60 cursor-not-allowed"
+        className={`w-full flex items-stretch text-left transition ${
+          isSelectable
+            ? "hover:bg-bg-raised active:scale-[0.98]"
+            : "opacity-60 cursor-not-allowed"
         }`}
       >
         <div className="w-1/2 min-h-[110px] flex-shrink-0 bg-gradient-to-br from-bg-raised to-bg-surface overflow-hidden">
@@ -59,11 +62,9 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
           <div className="text-xs text-text-secondary mt-0.5 tabular-nums">
             &#8377;{unit.hourlyRate}/hr
           </div>
-          <div
-            className={`inline-block mt-2 w-fit text-[10px] font-medium px-1.5 py-0.5 rounded-full ${STATUS_STYLES[unit.status]}`}
-          >
+          <Badge tone={STATUS_TONE[unit.status]} className="mt-2 w-fit">
             {STATUS_LABELS[unit.status]}
-          </div>
+          </Badge>
           {unit.status !== "AVAILABLE" && unit.nextAvailableAt && (
             <div className="text-[10px] text-text-secondary mt-1 tabular-nums">
               Next free at {unit.nextAvailableAt}

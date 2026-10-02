@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { User, CalendarCheck, HelpCircle, LogOut } from "lucide-react";
 import BottomSheet from "@/components/ui/BottomSheet";
 import { useAuthStore } from "../store/useAuthStore";
+import { getAvatarUrl } from "@/lib/constants";
 
 interface MenuItem {
   label: string;
@@ -34,6 +35,7 @@ export default function ProfileMenu() {
   ];
 
   const initial = user?.firstName?.[0]?.toUpperCase() ?? "?";
+  const avatarUrl = getAvatarUrl(user?.avatarId);
 
   return (
     <BottomSheet
@@ -43,11 +45,13 @@ export default function ProfileMenu() {
           aria-label="Open account menu"
           className="w-9 h-9 rounded-full bg-bg-raised border border-border-subtle flex items-center justify-center overflow-hidden"
         >
-          {/* TODO: swap for the user's chosen preset avatar image once
-              USERS.avatar_id exists — falls back to initial for now */}
-          <span className="font-display font-semibold text-sm text-text-primary">
-            {initial}
-          </span>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="w-full h-full" />
+          ) : (
+            <span className="font-display font-semibold text-sm text-text-primary">
+              {initial}
+            </span>
+          )}
         </button>
       }
     >

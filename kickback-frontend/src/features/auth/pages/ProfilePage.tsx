@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
@@ -12,11 +12,8 @@ import Input from "@/components/ui/Input";
 import { profileSchema, type ProfileFormValues } from "@/lib/validators";
 import { useUserProfile, useUpdateProfile } from "../hooks/useUpdateProfile";
 import { useAuthStore } from "../store/useAuthStore";
+import AvatarPicker from "../components/AvatarPicker";
 
-// NOTE: preset-avatar picker is intentionally not built yet — the backend
-// has no avatar_id column on User (flagged to backend team), so shipping a
-// picker here would let people "select" an avatar that silently never
-// saves. Adding it once that field exists is a small, contained follow-up.
 export default function ProfilePage() {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
@@ -46,7 +43,15 @@ export default function ProfilePage() {
 
   const onSubmit = (values: ProfileFormValues) => {
     updateProfile.mutate(values, {
-      onSuccess: () => toast.success("Profile updated"),
+      onSuccess: () => {
+        // Re-baseline the form to what was just saved — without this,
+        // isDirty stays true forever after the first save, since the form
+        // keeps comparing against the ORIGINAL values it loaded with, not
+        // what's now actually persisted. That's what let Save stay
+        // clickable indefinitely even with nothing new to save.
+        reset(values);
+        toast.success("Profile updated");
+      },
       onError: () => toast.error("Couldn't update profile. Please try again."),
     });
   };
@@ -61,14 +66,21 @@ export default function ProfilePage() {
       <Header />
 
       <div className="px-4 py-5">
-        <h1 className="font-display font-semibold text-2xl text-text-primary mb-5">
-          Profile
-        </h1>
+        <div className="flex items-center gap-2.5 mb-5">
+          <button onClick={() => navigate(-1)} aria-label="Go back">
+            <ArrowLeft size={18} className="text-text-secondary" />
+          </button>
+          <h1 className="font-display font-semibold text-2xl text-text-primary">
+            Profile
+          </h1>
+        </div>
 
         {isLoading ? (
           <p className="text-sm text-text-secondary">Loading...</p>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <>
+            {profile && <AvatarPicker profile={profile} />}
+            <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex gap-3">
               <div className="flex-1">
                 <Input
@@ -113,7 +125,8 @@ export default function ProfilePage() {
             >
               {updateProfile.isPending ? "Saving..." : "Save changes"}
             </button>
-          </form>
+            </form>
+          </>
         )}
 
         <button

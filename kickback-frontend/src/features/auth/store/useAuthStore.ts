@@ -8,6 +8,7 @@ interface User {
   lastName?: string;
   email: string;
   role: "USER" | "OWNER" | "ADMIN";
+  avatarId?: number; // LIVE — backed by users.avatar_id on the server now
 }
 
 interface AuthState {

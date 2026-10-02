@@ -44,7 +44,7 @@ export default function AvailableSlotsSheet({
                 setStartMinutes(gap.startMinutes);
                 setEndMinutes(gap.startMinutes + duration);
               }}
-              className="flex items-center gap-2.5 bg-bg-raised border border-border-subtle rounded-lg px-3.5 py-3 text-left active:scale-[0.98] transition-transform"
+              className="flex items-center gap-2.5 bg-bg-raised border border-border-subtle rounded-lg px-3.5 py-3 text-left hover:border-accent/40 active:scale-[0.98] transition"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-state-available/70 flex-shrink-0" />
               <span className="text-[13px] text-text-primary tabular-nums">

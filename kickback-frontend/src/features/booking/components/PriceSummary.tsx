@@ -1,4 +1,5 @@
 // src/features/booking/components/PriceSummary.tsx
+import Button from "@/components/ui/Button";
 import { useBookingDraftStore } from "../store/useBookingDraftStore";
 
 interface PriceSummaryProps {
@@ -18,12 +19,7 @@ export default function PriceSummary({ hourlyRate, onBook }: PriceSummaryProps) 
           &#8377;{estimatedTotal}
         </span>
       </div>
-      <button
-        onClick={onBook}
-        className="w-full bg-accent text-bg-base font-semibold text-[15px] py-3.5 rounded-card shadow-accent-glow"
-      >
-        Book
-      </button>
+      <Button onClick={onBook}>Book</Button>
     </div>
   );
 }

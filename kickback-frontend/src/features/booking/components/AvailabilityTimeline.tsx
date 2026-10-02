@@ -74,7 +74,7 @@ export default function AvailabilityTimeline({
         <button
           type="button"
           onClick={openDatePicker}
-          className="w-full flex items-center justify-between bg-bg-surface border border-border-subtle rounded-card px-3.5 py-3 active:scale-[0.98] transition-transform"
+          className="w-full flex items-center justify-between bg-bg-surface border border-border-subtle rounded-card px-3.5 py-3 hover:border-accent/40 active:scale-[0.98] transition"
         >
           <span className="text-sm font-medium text-text-primary">{dateLabel}</span>
           <CalendarDays size={16} className="text-text-secondary" />

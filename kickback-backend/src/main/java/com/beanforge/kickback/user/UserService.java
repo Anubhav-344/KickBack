@@ -1,12 +1,13 @@
 package com.beanforge.kickback.user;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.beanforge.kickback.entity.User;
 import com.beanforge.kickback.repository.UserRepository;
 import com.beanforge.kickback.user.dto.UpdateProfileRequest;
 import com.beanforge.kickback.user.dto.UserProfileResponse;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -52,6 +53,14 @@ public class UserService {
         user.setPhone(request.getPhone());
         user.setUsername(request.getUsername());
 
+        // Only touch avatarId when the request actually included one — the
+        // main "Save changes" form always sends the current value along with
+        // every edit, but this guards against ever accidentally wiping it
+        // with a null from some other caller.
+        if (request.getAvatarId() != null) {
+            user.setAvatarId(request.getAvatarId());
+        }
+
         return toResponse(userRepository.save(user));
     }
 
@@ -78,7 +87,8 @@ public class UserService {
                 user.getEmail(),
                 user.getPhone(),
                 user.getUsername(),
-                user.getRole().name()
+                user.getRole().name(),
+                user.getAvatarId()
         );
     }
 }

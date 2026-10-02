@@ -52,7 +52,7 @@ export default function BookResourceTypeModal({
                 onClick={() =>
                   navigate(`/cafes/${cafeSlug}/resource-types/${rt.resourceTypeId}`)
                 }
-                className="flex items-center gap-3 bg-bg-raised border border-border-subtle rounded-card px-3.5 py-3 text-left active:scale-[0.98] transition-transform"
+                className="flex items-center gap-3 bg-bg-raised border border-border-subtle rounded-card px-3.5 py-3 text-left hover:border-accent/40 active:scale-[0.98] transition"
               >
                 <span className="w-9 h-9 rounded-lg bg-accent/12 flex items-center justify-center flex-shrink-0">
                   <Icon size={16} className="text-text-primary" />

@@ -50,7 +50,7 @@ export default function ResourceTypeGrid({ resourceTypes }: ResourceTypeGridProp
               onClick={() =>
                 navigate(`/cafes/${cafeSlug}/resource-types/${rt.resourceTypeId}`)
               }
-              className={`text-left bg-bg-surface border border-border-subtle rounded-card p-3 active:scale-[0.97] transition-transform ${
+              className={`text-left bg-bg-surface border border-border-subtle rounded-card p-3 hover:border-accent/40 active:scale-[0.97] transition ${
                 isWide ? "col-span-2" : ""
               }`}
             >

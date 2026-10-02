@@ -6,31 +6,56 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import BookingSummaryCard from "../components/BookingSummaryCard";
 import SuccessBurst from "../components/SuccessBurst";
+import { useBookingDetails } from "../hooks/useBookingDetails";
+import { formatDateLabel } from "@/lib/dateTime";
 
-// TEMPORARY mock — replace with useBookingDetails(bookingId), returning the
-// now-CONFIRMED booking plus its linked PAYMENTS row (amount, method,
-// transaction_reference) once the backend exists.
-const MOCK_CONFIRMED_BOOKING = {
-  bookingId: "KB-20260722-0847",
-  cafeName: "Respawn Lounge",
-  cafeSlug: "respawn-lounge",
-  resourceName: "PS5 - Unit 1",
-  game: "FIFA 24",
-  dateLabel: "Today, 22 Jul",
-  startMinutes: 14 * 60,
-  durationMinutes: 60,
-  amountPaid: 126,
-  paymentMethod: "UPI",
-  transactionRef: "TXN8823471",
-};
+function minutesFromISO(iso: string): number {
+  const d = new Date(iso);
+  return d.getHours() * 60 + d.getMinutes();
+}
 
 export default function BookingConfirmationPage() {
   const navigate = useNavigate();
   const { bookingId } = useParams();
-  void bookingId; // will select the real booking once wired to a backend
+  const numericBookingId = bookingId ? Number(bookingId) : undefined;
 
-  const booking = MOCK_CONFIRMED_BOOKING;
-  const endMinutes = booking.startMinutes + booking.durationMinutes;
+  const { data: booking, isLoading } = useBookingDetails(numericBookingId);
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-sm text-text-secondary">Loading...</p>
+        </div>
+        <Footer />
+      </PageShell>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <PageShell>
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          <p className="text-sm text-text-secondary mb-5">
+            We couldn&apos;t find that booking.
+          </p>
+          <button
+            onClick={() => navigate("/bookings")}
+            className="text-sm font-semibold text-accent-hover border border-accent/40 rounded-md px-4 py-2"
+          >
+            View My Bookings
+          </button>
+        </div>
+        <Footer />
+      </PageShell>
+    );
+  }
+
+  const startMinutes = minutesFromISO(booking.startTimestamp);
+  const endMinutes = minutesFromISO(booking.endTimestamp);
+  const dateLabel = formatDateLabel(booking.startTimestamp.slice(0, 10));
 
   return (
     <PageShell>
@@ -59,8 +84,8 @@ export default function BookingConfirmationPage() {
           cafeName={booking.cafeName}
           resourceName={booking.resourceName}
           game={booking.game}
-          dateLabel={booking.dateLabel}
-          startMinutes={booking.startMinutes}
+          dateLabel={dateLabel}
+          startMinutes={startMinutes}
           endMinutes={endMinutes}
           durationMinutes={booking.durationMinutes}
         />
@@ -71,10 +96,10 @@ export default function BookingConfirmationPage() {
           Payment
         </div>
         <div className="bg-bg-surface border border-border-subtle rounded-card p-3.5 flex flex-col gap-2">
-          <Row label="Amount paid" value={`\u20B9${booking.amountPaid}`} />
-          <Row label="Payment method" value={booking.paymentMethod} />
-          <Row label="Transaction ID" value={booking.transactionRef} />
-          <Row label="Booking ID" value={booking.bookingId} />
+          <Row label="Amount paid" value={`\u20B9${booking.amountPaid ?? booking.totalAmount}`} />
+          {booking.paymentMethod && <Row label="Payment method" value={booking.paymentMethod} />}
+          {booking.transactionRef && <Row label="Transaction ID" value={booking.transactionRef} />}
+          <Row label="Booking ID" value={String(booking.bookingId)} />
         </div>
       </div>
 

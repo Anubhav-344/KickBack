@@ -60,7 +60,7 @@ export default function ResourceBreadcrumb({
       <BookResourceTypeModal
         resourceTypes={allResourceTypes}
         trigger={
-          <button className="flex items-center justify-between w-full mt-3 bg-bg-surface border border-border-subtle rounded-card px-3.5 py-3 active:scale-[0.98] transition-transform">
+          <button className="flex items-center justify-between w-full mt-3 bg-bg-surface border border-border-subtle rounded-card px-3.5 py-3 hover:border-accent/40 active:scale-[0.98] transition">
             <span className="flex items-center gap-2.5">
               <span className="w-8 h-8 rounded-lg bg-bg-raised flex items-center justify-center">
                 <Icon size={15} className="text-text-primary" />

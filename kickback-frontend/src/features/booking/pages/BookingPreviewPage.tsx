@@ -13,32 +13,74 @@ import OfferSelector from "@/features/offers/components/OfferSelector";
 import PaymentMethodPicker from "@/features/payment/components/PaymentMethodPicker";
 import type { PaymentMethod } from "@/features/payment/types";
 import type { Offer } from "@/features/cafe/types";
-import type { ValidateOfferResult } from "@/features/offers/api";
 import { useBookingDetails } from "../hooks/useBookingDetails";
 import { useCafeDetails } from "@/features/cafe/hooks/useCafeDetails";
-import { useValidateOffer } from "@/features/offers/hooks/useValidateOffer";
-import { toISODateTime } from "@/lib/dateTime";
+import { useApplyBookingOffer } from "../hooks/useApplyBookingOffer";
+import { useInitiatePayment } from "@/features/payment/hooks/useInitiatePayment";
+import { formatDateLabel } from "@/lib/dateTime";
+
+interface FieldError {
+  field?: string;
+  defaultMessage?: string;
+}
+interface BackendErrorBody {
+  detail?: string;
+  message?: string;
+  errors?: FieldError[];
+}
+
+function humanizeFieldError(field: string | undefined, message: string): string {
+  const lower = message.toLowerCase();
+  if ((field === "startTimestamp" || field === "endTimestamp") && lower.includes("future")) {
+    return "That time has already passed. Please pick a later start time.";
+  }
+  if (field === "gameId") {
+    return "Please choose a valid game for this resource.";
+  }
+  return message;
+}
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  const data = (error as { response?: { data?: BackendErrorBody } })?.response?.data;
+  if (!data) return fallback;
+
+  const fieldError = data.errors?.[0];
+  if (fieldError?.defaultMessage) {
+    return humanizeFieldError(fieldError.field, fieldError.defaultMessage);
+  }
+  if (data.detail) return data.detail;
+  if (data.message && !data.message.startsWith("Validation failed for object=")) {
+    return data.message;
+  }
+  return fallback;
+}
+
+function isAlreadyToastedGlobally(error: unknown): boolean {
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  return status === 401 || status === 409;
+}
+
+function minutesFromISO(iso: string): number {
+  const d = new Date(iso);
+  return d.getHours() * 60 + d.getMinutes();
+}
 
 export default function BookingPreviewPage() {
   const navigate = useNavigate();
   const { bookingId } = useParams();
+  const numericBookingId = bookingId ? Number(bookingId) : undefined;
 
-  const { data: booking, isLoading: bookingLoading } = useBookingDetails(bookingId);
-  // LIVE — feeds the offer list (cafe.offers) for the "select from
-  // available offers" sheet, plus the numeric cafeId the validate
-  // endpoint requires.
+  const { data: booking, isLoading: bookingLoading } = useBookingDetails(numericBookingId);
+  // Only needed for the browsable offers list — the booking itself already
+  // carries its own up-to-date pricing once an offer is applied.
   const { data: cafe } = useCafeDetails(booking?.cafeSlug);
 
-  const [appliedResult, setAppliedResult] = useState<ValidateOfferResult | null>(null);
   const [promoInput, setPromoInput] = useState("");
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("UPI");
 
-  const validateOffer = useValidateOffer();
-
-  // STILL MOCKED — see useCreateHold's comment; the actual hold_expires_at
-  // will come from the server response of POST /bookings once that's safe
-  // to rely on.
-  const [holdExpiresAt] = useState(() => booking?.holdExpiresAt ?? Date.now() + 10 * 60 * 1000);
+  const applyOffer = useApplyBookingOffer();
+  const initiatePayment = useInitiatePayment();
 
   if (bookingLoading || !booking) {
     return (
@@ -52,40 +94,34 @@ export default function BookingPreviewPage() {
     );
   }
 
-  const endMinutes = booking.startMinutes + booking.durationMinutes;
-  const subtotal = Math.round((booking.hourlyRate / 60) * booking.durationMinutes);
+  const startMinutes = minutesFromISO(booking.startTimestamp);
+  const endMinutes = minutesFromISO(booking.endTimestamp);
+  const dateLabel = formatDateLabel(booking.startTimestamp.slice(0, 10));
+  const holdExpiresAtMs = booking.holdExpiresAt ? new Date(booking.holdExpiresAt).getTime() : null;
 
-  // Once an offer is validated server-side, its numbers are authoritative —
-  // we display exactly what the backend computed rather than re-deriving
-  // discount/tax client-side (which is why PriceBreakdownCard's "tax" line
-  // here is back-derived from finalAmount, since /offers/validate doesn't
-  // return a separate tax figure).
-  const discount = appliedResult?.discountAmount ?? 0;
-  const total = appliedResult?.valid ? appliedResult.finalAmount : subtotal;
-  const tax = Math.max(0, total - subtotal + discount);
-
-  const runValidation = (offer: Offer) => {
-    if (!cafe) return;
-    validateOffer.mutate(
+  const applyOfferToBooking = (offer: Offer | null) => {
+    applyOffer.mutate(
       {
-        offerId: offer.offerId,
-        promoCode: offer.promoCode,
-        cafeId: cafe.cafeId,
-        date: booking.date,
-        startTimestamp: toISODateTime(booking.date, booking.startMinutes),
-        endTimestamp: toISODateTime(booking.date, endMinutes),
-        bookingAmount: subtotal,
+        bookingId: booking.bookingId,
+        offerId: offer?.offerId ?? null,
+        promoCode: offer?.promoCode ?? null,
       },
       {
-        onSuccess: (result) => {
-          if (result.valid) {
-            setAppliedResult(result);
-            toast.success(`${result.promoCode ?? result.title} applied`);
+        onSuccess: () => {
+          if (offer) {
+            setAppliedPromoCode(offer.promoCode ?? offer.title);
+            toast.success(`${offer.promoCode ?? offer.title} applied`, { id: "offer-result" });
           } else {
-            toast.error(result.message ?? "This offer isn't valid for this booking");
+            setAppliedPromoCode(null);
+            toast.success("Offer removed", { id: "offer-result" });
           }
         },
-        onError: () => toast.error("Couldn't validate offer. Please try again."),
+        onError: (error) => {
+          if (isAlreadyToastedGlobally(error)) return;
+          toast.error(extractErrorMessage(error, "Couldn't apply this offer. Please try again."), {
+            id: "offer-result",
+          });
+        },
       }
     );
   };
@@ -95,25 +131,41 @@ export default function BookingPreviewPage() {
       (o) => o.promoCode?.toLowerCase() === promoInput.trim().toLowerCase()
     );
     if (!match) {
-      toast.error("Invalid or expired code");
+      toast.error("Invalid or expired code", { id: "offer-result" });
       return;
     }
-    runValidation(match);
+    applyOfferToBooking(match);
   };
 
   const handleExpire = () => {
-    toast.error("Your hold expired — please rebook");
+    toast.error("Your hold expired — please rebook", { id: "hold-expired" });
     navigate(-1);
   };
 
   const handlePay = () => {
-    // STILL MOCKED — real version calls useInitiatePayment() (POST
-    // /payments then PATCH /payments/{id}/confirm), which requires a real
-    // bookingId from a real POST /bookings call. Wiring this now against a
-    // fake bookingId would just 404 against the real endpoint, so this
-    // stays a placeholder until booking creation itself is safe to use.
-    toast.success("Payment successful!");
-    navigate(`/bookings/${booking.bookingId}/confirmation`);
+    if (initiatePayment.isPending) return;
+
+    initiatePayment.mutate(
+      {
+        bookingId: booking.bookingId,
+        amount: booking.totalAmount,
+        method: paymentMethod,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Payment successful!");
+          navigate(`/bookings/${booking.bookingId}/confirmation`);
+        },
+        onError: (error) => {
+          if (!isAlreadyToastedGlobally(error)) {
+            toast.error(
+              extractErrorMessage(error, "Payment failed. Please try again."),
+              { id: "payment-error" }
+            );
+          }
+        },
+      }
+    );
   };
 
   return (
@@ -129,7 +181,9 @@ export default function BookingPreviewPage() {
         </h1>
       </div>
 
-      <HoldCountdown expiresAt={holdExpiresAt} onExpire={handleExpire} />
+      {holdExpiresAtMs && (
+        <HoldCountdown expiresAt={holdExpiresAtMs} onExpire={handleExpire} />
+      )}
 
       <div className="px-4 py-4 border-b border-border-subtle">
         <div className="text-xs uppercase tracking-wide text-text-secondary mb-2.5">
@@ -139,8 +193,8 @@ export default function BookingPreviewPage() {
           cafeName={booking.cafeName}
           resourceName={booking.resourceName}
           game={booking.game}
-          dateLabel={booking.dateLabel}
-          startMinutes={booking.startMinutes}
+          dateLabel={dateLabel}
+          startMinutes={startMinutes}
           endMinutes={endMinutes}
           durationMinutes={booking.durationMinutes}
         />
@@ -151,13 +205,13 @@ export default function BookingPreviewPage() {
           Offer
         </div>
 
-        {appliedResult?.valid && (
+        {appliedPromoCode && (
           <div className="flex items-center justify-between bg-state-available/10 border border-state-available/30 rounded-lg px-3.5 py-2.5 mb-2.5">
             <span className="text-xs font-medium text-state-available">
-              {appliedResult.promoCode ?? appliedResult.title} applied
+              {appliedPromoCode} applied
             </span>
             <button
-              onClick={() => setAppliedResult(null)}
+              onClick={() => applyOfferToBooking(null)}
               className="text-[11px] text-text-secondary"
             >
               Remove
@@ -174,17 +228,17 @@ export default function BookingPreviewPage() {
           />
           <button
             onClick={handleApplyCode}
-            disabled={validateOffer.isPending}
+            disabled={applyOffer.isPending}
             className="bg-bg-raised border border-border-subtle rounded-lg px-4 text-sm font-semibold text-text-primary disabled:opacity-60"
           >
-            {validateOffer.isPending ? "..." : "Apply"}
+            {applyOffer.isPending ? "..." : "Apply"}
           </button>
         </div>
 
         {cafe && cafe.offers.length > 0 && (
           <OfferSelector
             offers={cafe.offers}
-            onSelect={runValidation}
+            onSelect={applyOfferToBooking}
             trigger={
               <button className="text-xs font-medium text-accent-hover">
                 Select from available offers &#8250;
@@ -199,11 +253,11 @@ export default function BookingPreviewPage() {
           Price details
         </div>
         <PriceBreakdownCard
-          subtotal={subtotal}
-          discount={discount}
-          discountLabel={appliedResult?.promoCode ?? undefined}
-          tax={tax}
-          total={total}
+          subtotal={booking.subtotal}
+          discount={booking.discountAmount}
+          discountLabel={appliedPromoCode ?? undefined}
+          tax={booking.taxAmount}
+          total={booking.totalAmount}
         />
       </div>
 
@@ -217,9 +271,10 @@ export default function BookingPreviewPage() {
       <div className="px-4 py-4">
         <button
           onClick={handlePay}
-          className="w-full bg-accent text-bg-base font-semibold text-[15px] py-3.5 rounded-card shadow-accent-glow"
+          disabled={initiatePayment.isPending}
+          className="w-full bg-accent text-bg-base font-semibold text-[15px] py-3.5 rounded-card shadow-accent-glow disabled:opacity-60"
         >
-          Pay &#8377;{total}
+          {initiatePayment.isPending ? "Processing..." : `Pay \u20B9${booking.totalAmount}`}
         </button>
       </div>
 

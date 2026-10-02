@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
+import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { signupSchema, type SignupFormValues } from "@/lib/validators";
 import { useSignup } from "../hooks/useAuth";
@@ -16,9 +17,21 @@ export default function SignupPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<SignupFormValues>({ resolver: zodResolver(signupSchema) });
   const signupMutation = useSignup(redirectTo);
+
+  // Explicit guard, independent of the zod resolver's cross-field .refine()
+  // check — this guarantees the mutation can never fire on mismatched
+  // passwords regardless of any resolver/version quirk.
+  const onSubmit = (values: SignupFormValues) => {
+    if (values.password !== values.confirmPassword) {
+      setError("confirmPassword", { type: "manual", message: "Passwords don't match" });
+      return;
+    }
+    signupMutation.mutate(values);
+  };
 
   return (
     <PageShell>
@@ -42,7 +55,7 @@ export default function SignupPage() {
           Sign up to start booking gaming sessions
         </p>
 
-        <form onSubmit={handleSubmit((values) => signupMutation.mutate(values))}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex gap-3">
             <div className="flex-1">
               <Input
@@ -98,13 +111,14 @@ export default function SignupPage() {
             error={errors.confirmPassword?.message}
           />
 
-          <button
+          <Button
             type="submit"
-            disabled={signupMutation.isPending}
-            className="w-full bg-accent text-bg-base font-semibold text-sm py-3.5 rounded-card shadow-accent-glow mt-2 disabled:opacity-60 transition-opacity"
+            isLoading={signupMutation.isPending}
+            loadingText="Creating account..."
+            className="mt-2"
           >
-            {signupMutation.isPending ? "Creating account..." : "Create account"}
-          </button>
+            Create account
+          </Button>
         </form>
 
         <p className="text-center text-sm text-text-secondary mt-6">

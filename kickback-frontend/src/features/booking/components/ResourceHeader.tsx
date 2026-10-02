@@ -7,7 +7,16 @@ interface ResourceHeaderProps {
   unitName: string;
   hourlyRate: number;
   maxPlayers?: number;
+  minPlayers?: number;
   imageUrl?: string;
+}
+
+function formatPlayerCount(minPlayers?: number, maxPlayers?: number): string {
+  if (!maxPlayers) return "";
+  if (minPlayers && minPlayers !== maxPlayers) {
+    return ` \u00B7 ${minPlayers}-${maxPlayers} players`;
+  }
+  return ` \u00B7 Up to ${maxPlayers} players`;
 }
 
 export default function ResourceHeader({
@@ -15,6 +24,7 @@ export default function ResourceHeader({
   unitName,
   hourlyRate,
   maxPlayers,
+  minPlayers,
   imageUrl,
 }: ResourceHeaderProps) {
   const navigate = useNavigate();
@@ -39,7 +49,7 @@ export default function ResourceHeader({
             </div>
             <div className="text-xs text-text-secondary mt-0.5 tabular-nums">
               &#8377;{hourlyRate}/hr
-              {maxPlayers ? ` \u00B7 Up to ${maxPlayers} players` : ""}
+              {formatPlayerCount(minPlayers, maxPlayers)}
             </div>
             <div className="text-[11px] text-text-secondary mt-1 italic">
               Extra controllers available at the caf&eacute; &middot; &#8377;50 each

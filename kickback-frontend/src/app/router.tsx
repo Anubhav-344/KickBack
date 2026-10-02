@@ -36,9 +36,12 @@ export const router = createBrowserRouter([
     path: "/cafes/:cafeSlug/resources/:resourceId/book",
     element: <BookingPage />,
   },
-  { 
-    path: "/bookings/:bookingId/preview", 
-    element: <RequireAuth><BookingPreviewPage /></RequireAuth> 
+  {
+    // Real booking already exists by the time this page loads (created on
+    // the Booking page's "Book" click) — the hold is active and offers get
+    // applied against this same booking via PATCH /bookings/{id}/offer.
+    path: "/bookings/:bookingId/preview",
+    element: <RequireAuth><BookingPreviewPage /></RequireAuth>
   },
   {
     path: "/login",

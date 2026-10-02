@@ -1,7 +1,15 @@
 package com.beanforge.kickback.entity;
 
 import com.beanforge.kickback.enums.Role;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,4 +47,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+
+    // References one of a fixed set of preset avatar images (chosen from
+    // the frontend's gallery, not a custom upload — no file storage/
+    // moderation needed). Nullable: a new user has no avatar chosen yet.
+    @Column(name = "avatar_id")
+    private Integer avatarId;
 }
