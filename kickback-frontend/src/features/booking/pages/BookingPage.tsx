@@ -128,6 +128,7 @@ export default function BookingPage() {
           maxPlayers={selectedGame?.maxPlayers ?? unit.maxPlayers}
           minPlayers={selectedGame?.minPlayers}
           imageUrl={unit.imageUrl}
+          extraNote={unit.extraNote}
         />
 
         <AvailabilityTimeline
@@ -161,6 +162,7 @@ export default function BookingPage() {
             maxPlayers={selectedGame?.maxPlayers ?? unit.maxPlayers}
             minPlayers={selectedGame?.minPlayers}
             imageUrl={unit.imageUrl}
+            extraNote={unit.extraNote}
           />
 
           <AvailabilityTimeline

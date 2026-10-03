@@ -9,6 +9,8 @@ interface ResourceHeaderProps {
   maxPlayers?: number;
   minPlayers?: number;
   imageUrl?: string;
+  // Per-unit note from the database. Nothing renders when the unit has none.
+  extraNote?: string;
 }
 
 function formatPlayerCount(minPlayers?: number, maxPlayers?: number): string {
@@ -26,6 +28,7 @@ export default function ResourceHeader({
   maxPlayers,
   minPlayers,
   imageUrl,
+  extraNote,
 }: ResourceHeaderProps) {
   const navigate = useNavigate();
   const { cafeSlug } = useParams();
@@ -51,9 +54,11 @@ export default function ResourceHeader({
               &#8377;{hourlyRate}/hr
               {formatPlayerCount(minPlayers, maxPlayers)}
             </div>
-            <div className="text-[11px] lg:text-sm text-text-secondary mt-1 lg:mt-2 italic">
-              Extra controllers available at the caf&eacute; &middot; &#8377;50 each
-            </div>
+            {extraNote && (
+              <div className="text-[11px] lg:text-sm text-text-secondary mt-1 lg:mt-2 italic">
+                {extraNote}
+              </div>
+            )}
           </div>
         </div>
 

@@ -72,7 +72,7 @@ export default function CafeDiscoveryPage() {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search cafés, games, areas..."
+            placeholder="Search cafés or areas..."
             className="flex-1 bg-transparent text-sm lg:text-base text-text-primary placeholder:text-text-secondary focus:outline-none"
           />
         </div>

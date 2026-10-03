@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useNavigate } from "react-router-dom";
 import { User, CalendarCheck, HelpCircle, LogOut } from "lucide-react";
 import BottomSheet from "@/components/ui/BottomSheet";
+import ProfileMenuPopover from "./ProfileMenuPopover";
 import { useAuthStore } from "../store/useAuthStore";
 import { getAvatarUrl } from "@/lib/constants";
 
@@ -36,44 +37,69 @@ export default function ProfileMenu() {
 
   const initial = user?.firstName?.[0]?.toUpperCase() ?? "?";
   const avatarUrl = getAvatarUrl(user?.avatarId);
+  const title = user ? `${user.firstName} ${user.lastName ?? ""}`.trim() : "Account";
+
+  const triggerButton = (
+    <button
+      aria-label="Open account menu"
+      className="w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-bg-raised border border-border-subtle flex items-center justify-center overflow-hidden"
+    >
+      {avatarUrl ? (
+        <img src={avatarUrl} alt="" className="w-full h-full" />
+      ) : (
+        <span className="font-display font-semibold text-sm text-text-primary">
+          {initial}
+        </span>
+      )}
+    </button>
+  );
+
+  const runItem = (item: MenuItem) => (item.action ? item.action() : navigate(item.path!));
 
   return (
-    <BottomSheet
-      title={user ? `${user.firstName} ${user.lastName ?? ""}`.trim() : "Account"}
-      trigger={
-        <button
-          aria-label="Open account menu"
-          className="w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-bg-raised border border-border-subtle flex items-center justify-center overflow-hidden"
-        >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="w-full h-full" />
-          ) : (
-            <span className="font-display font-semibold text-sm text-text-primary">
-              {initial}
-            </span>
+    <>
+      {/* Mobile/tablet: bottom sheet, unchanged */}
+      <div className="lg:hidden">
+        <BottomSheet title={title} trigger={triggerButton}>
+          {user?.email && (
+            <div className="text-xs text-text-secondary -mt-2 mb-3.5">{user.email}</div>
           )}
-        </button>
-      }
-    >
-      {user?.email && (
-        <div className="text-xs text-text-secondary -mt-2 mb-3.5">{user.email}</div>
-      )}
 
-      <div className="flex flex-col gap-1.5">
-        {items.map((item) => (
-          <Dialog.Close asChild key={item.label}>
-            <button
-              onClick={() => (item.action ? item.action() : navigate(item.path!))}
-              className={`flex items-center gap-3 px-3.5 py-3 rounded-card text-left ${
-                item.destructive ? "text-state-error" : "text-text-primary"
-              }`}
-            >
-              <item.icon size={17} className={item.destructive ? "text-state-error" : "text-text-secondary"} />
-              <span className="text-sm font-medium">{item.label}</span>
-            </button>
-          </Dialog.Close>
-        ))}
+          <div className="flex flex-col gap-1.5">
+            {items.map((item) => (
+              <Dialog.Close asChild key={item.label}>
+                <button
+                  onClick={() => runItem(item)}
+                  className={`flex items-center gap-3 px-3.5 py-3 rounded-card text-left ${
+                    item.destructive ? "text-state-error" : "text-text-primary"
+                  }`}
+                >
+                  <item.icon
+                    size={17}
+                    className={item.destructive ? "text-state-error" : "text-text-secondary"}
+                  />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </button>
+              </Dialog.Close>
+            ))}
+          </div>
+        </BottomSheet>
       </div>
-    </BottomSheet>
+
+      {/* Desktop: dropdown anchored right under the avatar */}
+      <div className="hidden lg:block">
+        <ProfileMenuPopover
+          title={title}
+          email={user?.email}
+          items={items.map((item) => ({
+            label: item.label,
+            icon: item.icon,
+            destructive: item.destructive,
+            onSelect: () => runItem(item),
+          }))}
+          trigger={triggerButton}
+        />
+      </div>
+    </>
   );
 }

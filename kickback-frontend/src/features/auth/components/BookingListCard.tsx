@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as Dialog from "@radix-ui/react-dialog";
 import BottomSheet from "@/components/ui/BottomSheet";
+import CenteredModal from "@/components/ui/CenteredModal";
 import Badge from "@/components/ui/Badge";
 import { formatMinutesAsTime } from "@/lib/dateTime";
 import { useCancelBooking, type UserBookingSummary } from "../hooks/useUserBookings";
@@ -33,7 +34,12 @@ interface BookingListCardProps {
 export default function BookingListCard({ booking }: BookingListCardProps) {
   const navigate = useNavigate();
   const cancelBooking = useCancelBooking();
-  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Separate open states for the mobile sheet and the desktop modal — both
+  // render their content in a portal, so they'd both appear if they shared
+  // one flag (see the note in CenteredModal).
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const { dateLabel, minutes: startMinutes } = parseTimestamp(booking.startTimestamp);
   const endMinutes = startMinutes + booking.durationMinutes;
@@ -44,17 +50,41 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
     cancelBooking.mutate(booking.bookingId, {
       onSuccess: () => {
         toast.success("Booking cancelled");
-        setConfirmOpen(false);
+        setSheetOpen(false);
+        setModalOpen(false);
       },
-      onError: (err) => {
-        const message =
-          err && typeof err === "object" && "response" in err
-            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-            : undefined;
-        toast.error(message ?? "Couldn't cancel booking. Please try again.");
-      },
+      onError: () => toast.error("Couldn't cancel booking. Please try again."),
     });
   };
+
+  const cancelTrigger = (
+    <button className="text-xs lg:text-sm font-medium text-state-error">Cancel</button>
+  );
+
+  // Same confirmation content in both the sheet and the modal. "Keep
+  // booking" uses Dialog.Close, which closes whichever one it's inside.
+  const cancelContent = (
+    <>
+      <p className="text-sm lg:text-base text-text-secondary mb-4 lg:mb-6">
+        This will cancel your booking at {booking.cafeName} on {dateLabel}. This
+        can&apos;t be undone.
+      </p>
+      <div className="flex gap-2.5 lg:gap-3">
+        <Dialog.Close asChild>
+          <button className="flex-1 bg-bg-surface lg:bg-bg-raised border border-border-subtle text-text-primary text-sm font-medium py-3 lg:py-3.5 rounded-card">
+            Keep booking
+          </button>
+        </Dialog.Close>
+        <button
+          onClick={handleCancel}
+          disabled={cancelBooking.isPending}
+          className="flex-1 bg-state-error text-bg-base text-sm font-semibold py-3 lg:py-3.5 rounded-card disabled:opacity-60"
+        >
+          {cancelBooking.isPending ? "Cancelling..." : "Yes, cancel"}
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <div className="bg-bg-surface border border-border-subtle rounded-card p-3.5 lg:p-5">
@@ -84,33 +114,32 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
         </span>
 
         {canCancel && (
-          <BottomSheet
-            open={confirmOpen}
-            onOpenChange={setConfirmOpen}
-            title="Cancel this booking?"
-            trigger={
-              <button className="text-xs lg:text-sm font-medium text-state-error">Cancel</button>
-            }
-          >
-            <p className="text-sm text-text-secondary mb-4">
-              This will cancel your booking at {booking.cafeName} on {dateLabel}. This
-              can&apos;t be undone.
-            </p>
-            <div className="flex gap-2.5">
-              <Dialog.Close asChild>
-                <button className="flex-1 bg-bg-surface border border-border-subtle text-text-primary text-sm font-medium py-3 rounded-card">
-                  Keep booking
-                </button>
-              </Dialog.Close>
-              <button
-                onClick={handleCancel}
-                disabled={cancelBooking.isPending}
-                className="flex-1 bg-state-error text-bg-base text-sm font-semibold py-3 rounded-card disabled:opacity-60"
+          <>
+            {/* Mobile/tablet: bottom sheet, unchanged */}
+            <div className="lg:hidden">
+              <BottomSheet
+                open={sheetOpen}
+                onOpenChange={setSheetOpen}
+                title="Cancel this booking?"
+                trigger={cancelTrigger}
               >
-                {cancelBooking.isPending ? "Cancelling..." : "Yes, cancel"}
-              </button>
+                {cancelContent}
+              </BottomSheet>
             </div>
-          </BottomSheet>
+
+            {/* Desktop: centered confirmation dialog */}
+            <div className="hidden lg:block">
+              <CenteredModal
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                title="Cancel this booking?"
+                trigger={cancelTrigger}
+                size="sm"
+              >
+                {cancelContent}
+              </CenteredModal>
+            </div>
+          </>
         )}
 
         {booking.status === "COMPLETED" && !booking.hasReview && (
@@ -118,7 +147,7 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
             bookingId={booking.bookingId}
             cafeName={booking.cafeName}
             trigger={
-              <button className="text-xs font-medium text-accent-hover">
+              <button className="text-xs lg:text-sm font-medium text-accent-hover">
                 Leave a review
               </button>
             }

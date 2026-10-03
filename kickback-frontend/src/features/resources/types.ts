@@ -24,5 +24,6 @@ export interface ResourceUnit {
   description?: string; // free-text "specs" for MVP — see design notes
   games?: GameOption[]; // resolved from RESOURCE_GAMES join
   imageUrl?: string;
-  nextAvailableAt?: string; // display-formatted time, only set when status !== AVAILABLE and known
+  nextAvailableAt?: string; // display-formatted time, only set when the unit is in use right now
+  extraNote?: string; // optional per-unit note (e.g. extra controllers) — absent for units without one
 }

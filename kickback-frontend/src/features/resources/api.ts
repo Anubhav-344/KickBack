@@ -1,6 +1,7 @@
 // src/features/resources/api.ts
 import axiosClient from "@/app/axiosClient";
 import { mapOperatingWindow } from "@/features/cafe/api";
+import { formatDateLabel, formatMinutesAsTime, todayISO } from "@/lib/dateTime";
 import type { ResourceUnit, GameOption, ResourceStatus } from "./types";
 import type { ExistingBooking, OperatingWindow } from "@/features/booking/types";
 
@@ -26,7 +27,10 @@ interface RawResource {
   description?: string;
   games?: RawGame[];
   imageUrl?: string;
+  // ISO LocalDateTime from the backend (e.g. "2026-10-03T15:00:00"), only
+  // present when the unit is in use right now.
   nextAvailableAt?: string;
+  extraNote?: string;
 }
 
 // GET /api/cafes/{slug}/resources returns a WRAPPED object, not a bare
@@ -65,6 +69,21 @@ function mapGame(raw: RawGame): GameOption {
   };
 }
 
+// The backend sends nextAvailableAt as an ISO timestamp; the card just
+// prints whatever string it's given, so turn it into something readable:
+// "3:00 PM" if it's today, "Tomorrow, 1:00 AM" (etc.) otherwise. If it's
+// not a parseable date at all (e.g. already a display string), pass it
+// through untouched.
+function formatNextFree(iso?: string): string | undefined {
+  if (!iso) return undefined;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+
+  const time = formatMinutesAsTime(d.getHours() * 60 + d.getMinutes());
+  const dateISO = iso.slice(0, 10);
+  return dateISO === todayISO() ? time : `${formatDateLabel(dateISO)}, ${time}`;
+}
+
 function mapResource(raw: RawResource): ResourceUnit {
   return {
     resourceId: raw.resourceId,
@@ -77,7 +96,8 @@ function mapResource(raw: RawResource): ResourceUnit {
     description: raw.description,
     games: (raw.games ?? []).map(mapGame),
     imageUrl: raw.imageUrl,
-    nextAvailableAt: raw.nextAvailableAt,
+    nextAvailableAt: formatNextFree(raw.nextAvailableAt),
+    extraNote: raw.extraNote ?? undefined,
   };
 }
 

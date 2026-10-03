@@ -2,6 +2,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import BottomSheet from "@/components/ui/BottomSheet";
 import Badge from "@/components/ui/Badge";
+import ResourceUnitInfoDesktopModal from "./ResourceUnitInfoDesktopModal";
 import type { ResourceUnit } from "../types";
 
 const STATUS_TONE: Record<string, "available" | "muted" | "error"> = {
@@ -30,6 +31,15 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
   const { cafeSlug } = useParams();
 
   const isSelectable = unit.status !== "OUT_OF_SERVICE" && unit.status !== "MAINTENANCE";
+
+  const infoTrigger = (
+    <button
+      className="absolute top-2 right-2 w-[22px] h-[22px] rounded-md bg-black/45 backdrop-blur-sm flex items-center justify-center text-[11px] font-bold text-text-primary"
+      aria-label={`View details for ${unit.resourceName}`}
+    >
+      i
+    </button>
+  );
 
   return (
     <div className="relative bg-bg-surface border border-border-subtle rounded-card overflow-hidden">
@@ -62,7 +72,10 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
           <div className="text-xs lg:text-sm text-text-secondary mt-0.5 tabular-nums">
             &#8377;{unit.hourlyRate}/hr
           </div>
-          <Badge tone={STATUS_TONE[unit.status]} className="mt-2 lg:mt-3 w-fit lg:text-xs lg:px-2.5 lg:py-1">
+          <Badge
+            tone={STATUS_TONE[unit.status]}
+            className="mt-2 lg:mt-3 w-fit lg:text-xs lg:px-2.5 lg:py-1"
+          >
             {STATUS_LABELS[unit.status]}
           </Badge>
           {unit.status !== "AVAILABLE" && unit.nextAvailableAt && (
@@ -73,26 +86,24 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
         </div>
       </button>
 
-      <BottomSheet
-        title={unit.resourceName}
-        trigger={
-          <button
-            className="absolute top-2 right-2 w-[22px] h-[22px] rounded-md bg-black/45 backdrop-blur-sm flex items-center justify-center text-[11px] font-bold text-text-primary"
-            aria-label={`View details for ${unit.resourceName}`}
-          >
-            i
-          </button>
-        }
-      >
-        <div className="flex flex-col gap-2.5 text-xs">
-          {unit.brand && <InfoRow label="Brand" value={unit.brand} />}
-          {unit.maxPlayers && <InfoRow label="Players" value={`Up to ${unit.maxPlayers}`} />}
-          {unit.games && unit.games.length > 0 && (
-            <InfoRow label="Games" value={unit.games.map((g) => g.gameName).join(", ")} />
-          )}
-          {unit.description && <InfoRow label="Specs" value={unit.description} />}
-        </div>
-      </BottomSheet>
+      {/* Mobile/tablet: bottom sheet, unchanged */}
+      <div className="lg:hidden">
+        <BottomSheet title={unit.resourceName} trigger={infoTrigger}>
+          <div className="flex flex-col gap-2.5 text-xs">
+            {unit.brand && <InfoRow label="Brand" value={unit.brand} />}
+            {unit.maxPlayers && <InfoRow label="Players" value={`Up to ${unit.maxPlayers}`} />}
+            {unit.games && unit.games.length > 0 && (
+              <InfoRow label="Games" value={unit.games.map((g) => g.gameName).join(", ")} />
+            )}
+            {unit.description && <InfoRow label="Specs" value={unit.description} />}
+          </div>
+        </BottomSheet>
+      </div>
+
+      {/* Desktop: centered detail modal */}
+      <div className="hidden lg:block">
+        <ResourceUnitInfoDesktopModal unit={unit} trigger={infoTrigger} />
+      </div>
     </div>
   );
 }
