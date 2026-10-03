@@ -25,28 +25,28 @@ export default function MyBookingsPage() {
     <PageShell>
       <Header />
 
-      <div className="flex items-center gap-2.5 px-4 pt-5">
+      <div className="flex items-center gap-2.5 px-4 lg:px-8 pt-5 lg:pt-8">
         <button onClick={() => navigate(-1)} aria-label="Go back">
-          <ArrowLeft size={18} className="text-text-secondary" />
+          <ArrowLeft size={18} className="text-text-secondary lg:w-6 lg:h-6" />
         </button>
-        <h1 className="font-display font-semibold text-2xl text-text-primary">
+        <h1 className="font-display font-semibold text-2xl lg:text-4xl text-text-primary">
           My Bookings
         </h1>
       </div>
 
-      <div className="px-4 pt-4">
+      <div className="px-4 lg:px-8 pt-4 lg:pt-6">
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 max-w-xs">
           <TabButton label="Upcoming" active={tab === "upcoming"} onClick={() => setTab("upcoming")} />
           <TabButton label="Past" active={tab === "past"} onClick={() => setTab("past")} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-2.5 px-4 pb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 px-4 lg:px-8 pb-6">
         {isLoading ? (
-          <p className="text-sm text-text-secondary text-center py-10">Loading...</p>
+          <p className="col-span-full text-sm text-text-secondary text-center py-10">Loading...</p>
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-text-secondary text-center py-10">
+          <p className="col-span-full text-sm text-text-secondary text-center py-10">
             No {tab} bookings.
           </p>
         ) : (

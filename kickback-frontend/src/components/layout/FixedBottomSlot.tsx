@@ -10,9 +10,12 @@ interface FixedBottomSlotProps {
  * children stay pinned to the bottom of the screen while scrolling —
  * true "position: fixed" behavior.
  *
- * It centers an inner max-w-app column so a floating button placed inside
- * lines up with the page's column edge on wide desktop screens, instead of
- * the raw browser window edge.
+ * The inner container spans the full viewport width (PageShell itself has
+ * no max-width anymore), so a child positioned with e.g. `right-5` resolves
+ * against the real screen edge. This previously capped at max-w-app to
+ * line up with PageShell's old centered column — now that PageShell is
+ * edge-to-edge, keeping that cap would leave the button floating relative
+ * to an invisible, meaningless 480px box instead of the actual page edge.
  *
  * NOTE: this replaces the earlier approach of putting `transform` on
  * PageShell to create a containing block. That trick breaks `position:
@@ -24,10 +27,10 @@ interface FixedBottomSlotProps {
 export default function FixedBottomSlot({ children }: FixedBottomSlotProps) {
   return (
     <div
-      className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
+      className="fixed inset-x-0 z-20 pointer-events-none"
       style={{ bottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="w-full max-w-app relative">{children}</div>
+      <div className="w-full relative">{children}</div>
     </div>
   );
 }

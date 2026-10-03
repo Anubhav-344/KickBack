@@ -6,19 +6,21 @@ interface PageShellProps {
 }
 
 /**
- * Mobile-first shell: full width up to 480px (max-w-app), centered column
- * beyond that on desktop.
+ * The outer shell is now always full-bleed (100% viewport width, zero
+ * margin, no border) — per explicit decision to prioritize true edge-to-
+ * edge desktop width over a centered-column look.
  *
- * Does NOT use a transform here (see FixedBottomSlot for why) — any fixed
- * floating UI (Book button, hold countdown, etc.) should be rendered via
- * FixedBottomSlot instead of relying on this wrapper as a containing block.
+ * Since the shell itself no longer caps width at all, any page whose
+ * content genuinely needs to stay narrower for readability (a login form,
+ * a centered single-column booking flow) is responsible for its OWN inner
+ * max-width wrapper now — see each page for how it handles that. Pages
+ * that are meant to be browsable/wide (Discovery, café detail, two-column
+ * checkout) just use the full width directly with no extra wrapper needed.
  */
 export default function PageShell({ children }: PageShellProps) {
   return (
-    <div className="min-h-screen bg-bg-base flex justify-center">
-      <div className="w-full max-w-app relative flex flex-col min-h-screen md:border-x md:border-border-subtle">
-        {children}
-      </div>
+    <div className="min-h-screen bg-bg-base flex flex-col w-full">
+      {children}
     </div>
   );
 }

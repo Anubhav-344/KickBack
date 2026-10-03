@@ -57,23 +57,23 @@ export default function CafeDiscoveryPage() {
     <PageShell>
       <Header />
 
-      <div className="px-4 pt-4">
-        <h1 className="font-display font-semibold text-[26px] text-text-primary">
+      <div className="px-4 lg:px-8 pt-4 lg:pt-10">
+        <h1 className="font-display font-semibold text-[26px] lg:text-4xl text-text-primary">
           Find your next session
         </h1>
-        <p className="text-[13px] text-text-secondary mt-1">
+        <p className="text-[13px] lg:text-base text-text-secondary mt-1 lg:mt-2">
           Gaming caf&eacute;s in Bhopal, ready to book
         </p>
       </div>
 
-      <div className="px-4 py-4">
-        <div className="flex items-center gap-2.5 bg-bg-surface border border-border-subtle rounded-card px-3.5 py-3">
-          <Search size={15} className="text-text-secondary" />
+      <div className="px-4 lg:px-8 py-4 lg:py-6">
+        <div className="flex items-center gap-2.5 bg-bg-surface border border-border-subtle rounded-card px-3.5 lg:px-5 py-3 lg:py-4 lg:max-w-xl">
+          <Search size={15} className="text-text-secondary lg:w-[18px] lg:h-[18px]" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search cafés, games, areas..."
-            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
+            className="flex-1 bg-transparent text-sm lg:text-base text-text-primary placeholder:text-text-secondary focus:outline-none"
           />
         </div>
       </div>
@@ -87,23 +87,23 @@ export default function CafeDiscoveryPage() {
         onToggleOpenNow={() => setOpenNowOnly((v) => !v)}
       />
 
-      <div className="text-xs uppercase tracking-wide text-text-secondary px-4 pb-2.5">
+      <div className="text-xs uppercase tracking-wide text-text-secondary px-4 lg:px-8 pb-2.5">
         {isLoading
           ? "Loading caf\u00E9s..."
           : `${filteredAndSortedCafes.length} ${filteredAndSortedCafes.length === 1 ? "caf\u00E9" : "caf\u00E9s"} in Bhopal`}
       </div>
 
-      <div className="flex flex-col gap-3 px-4 pb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 px-4 lg:px-8 pb-6">
         {isLoading ? (
-          <div className="text-sm text-text-secondary text-center py-10">
+          <div className="col-span-full text-sm text-text-secondary text-center py-10">
             Loading caf&eacute;s...
           </div>
         ) : isError ? (
-          <div className="text-sm text-state-error text-center py-10">
+          <div className="col-span-full text-sm text-state-error text-center py-10">
             Couldn&apos;t load caf&eacute;s. Please try again.
           </div>
         ) : filteredAndSortedCafes.length === 0 ? (
-          <div className="text-sm text-text-secondary text-center py-10">
+          <div className="col-span-full text-sm text-text-secondary text-center py-10">
             No caf&eacute;s match your filters.
           </div>
         ) : (

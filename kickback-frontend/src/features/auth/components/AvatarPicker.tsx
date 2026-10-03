@@ -8,10 +8,6 @@ interface AvatarPickerProps {
   profile: UserProfile;
 }
 
-// LIVE — picking an avatar immediately PATCHes /users/me with the full
-// current profile plus the new avatarId (the backend requires the other
-// fields on every update, so we resend what's already loaded rather than
-// just the one changed field).
 export default function AvatarPicker({ profile }: AvatarPickerProps) {
   const currentAvatarId = useAuthStore((s) => s.user?.avatarId);
   const updateProfile = useUpdateProfile();
@@ -35,7 +31,11 @@ export default function AvatarPicker({ profile }: AvatarPickerProps) {
   return (
     <div className="mb-5">
       <div className="text-xs text-text-secondary mb-2">Avatar</div>
-      <div className="grid grid-cols-4 gap-2.5">
+      {/* Full width again (no w-fit, no fixed pixel size) — circles stretch
+          to fill the row just like the First/Last name fields below, so
+          the grid's right edge lines up with the rest of the form instead
+          of looking like a narrow, separate island. */}
+      <div className="grid grid-cols-4 gap-2.5 w-full">
         {AVATAR_PRESETS.map((preset) => {
           const isSelected = currentAvatarId === preset.id;
           return (

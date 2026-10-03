@@ -16,20 +16,20 @@ interface PaymentMethodPickerProps {
 
 export default function PaymentMethodPicker({ selected, onSelect }: PaymentMethodPickerProps) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2 lg:gap-3">
       {OPTIONS.map(({ value, label, icon: Icon }) => {
         const isSelected = value === selected;
         return (
           <button
             key={value}
             onClick={() => onSelect(value)}
-            className={`flex items-center gap-2 border rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 border rounded-lg px-3 lg:px-4 py-2.5 lg:py-3.5 text-sm lg:text-[15px] font-medium transition-colors ${
               isSelected
                 ? "border-accent bg-accent/10 text-text-primary"
                 : "border-border-subtle bg-bg-surface text-text-primary"
             }`}
           >
-            <Icon size={15} className={isSelected ? "text-accent" : "text-text-secondary"} />
+            <Icon size={15} className={isSelected ? "text-accent lg:w-[17px] lg:h-[17px]" : "text-text-secondary lg:w-[17px] lg:h-[17px]"} />
             {label}
           </button>
         );

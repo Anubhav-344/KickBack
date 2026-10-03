@@ -12,7 +12,7 @@ export default function SupportPage() {
   return (
     <PageShell>
       <Header />
-      <div className="px-4 py-6">
+      <div className="px-4 py-6 max-w-xl mx-auto w-full">
         <div className="flex items-center gap-2.5 mb-4">
           <button onClick={() => navigate(-1)} aria-label="Go back">
             <ArrowLeft size={18} className="text-text-secondary" />

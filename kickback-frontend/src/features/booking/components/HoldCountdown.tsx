@@ -28,7 +28,7 @@ export default function HoldCountdown({ expiresAt, onExpire }: HoldCountdownProp
 
   return (
     <div
-      className={`mx-4 mt-3.5 flex items-center justify-between rounded-card px-3.5 py-2.5 border ${
+      className={`flex items-center justify-between rounded-card px-3.5 py-2.5 border ${
         isExpired
           ? "bg-state-error/10 border-state-error/35"
           : "bg-state-pending/10 border-state-pending/35"

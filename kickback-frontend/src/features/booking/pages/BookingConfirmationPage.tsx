@@ -61,6 +61,7 @@ export default function BookingConfirmationPage() {
     <PageShell>
       <Header />
 
+      <div className="max-w-xl mx-auto w-full">
       <div className="flex flex-col items-center pt-10 pb-6 px-6 text-center">
         <div className="relative w-16 h-16 flex items-center justify-center mb-4">
           <SuccessBurst />
@@ -117,8 +118,9 @@ export default function BookingConfirmationPage() {
           Back to Caf&eacute;
         </button>
       </div>
+      </div>
 
-      <Footer cafeName={booking.cafeName} locationLabel="Bhopal" />
+      
     </PageShell>
   );
 }

@@ -22,12 +22,12 @@ export default function CafeListingCard({ cafe }: CafeListingCardProps) {
         status.isOpenNow ? "" : "opacity-55"
       }`}
     >
-      <div className="h-[120px] relative bg-gradient-to-br from-bg-raised to-bg-surface overflow-hidden">
+      <div className="h-[120px] lg:h-[260px] relative bg-gradient-to-br from-bg-raised to-bg-surface overflow-hidden">
         {cafe.imageUrl && (
           <img src={cafe.imageUrl} alt={cafe.name} className="w-full h-full object-cover" />
         )}
         <span
-          className={`absolute top-2.5 left-2.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border ${
+          className={`absolute top-2.5 left-2.5 lg:top-3.5 lg:left-3.5 text-[10px] lg:text-xs font-semibold px-2.5 lg:px-3 py-1 lg:py-1.5 rounded-full border ${
             status.isOpenNow
               ? "text-state-available bg-bg-base/75 border-state-available/30"
               : "text-text-secondary bg-bg-base/75 border-border-subtle"
@@ -37,37 +37,37 @@ export default function CafeListingCard({ cafe }: CafeListingCardProps) {
         </span>
       </div>
 
-      <div className="p-3.5">
+      <div className="p-3.5 lg:p-5">
         <div className="flex items-start justify-between">
-          <div className="font-display font-semibold text-lg text-text-primary">
+          <div className="font-display font-semibold text-lg lg:text-xl text-text-primary">
             {cafe.name}
           </div>
-          <div className="flex items-center gap-1 text-sm font-semibold text-text-primary">
-            <Star size={12} className="fill-state-pending text-state-pending" />
+          <div className="flex items-center gap-1 text-sm lg:text-base font-semibold text-text-primary">
+            <Star size={12} className="fill-state-pending text-state-pending lg:w-[14px] lg:h-[14px]" />
             {cafe.averageRating.toFixed(1)}
           </div>
         </div>
-        <div className="text-xs text-text-secondary mt-0.5">
+        <div className="text-xs lg:text-sm text-text-secondary mt-0.5">
           {cafe.area}, {cafe.city}
         </div>
 
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
+        <div className="flex flex-wrap gap-1.5 mt-2.5 lg:mt-3.5">
           {visibleTags.map((tag) => (
             <span
               key={tag}
-              className="text-[10px] text-text-secondary border border-border-subtle rounded-full px-2.5 py-1"
+              className="text-[10px] lg:text-xs text-text-secondary border border-border-subtle rounded-full px-2.5 lg:px-3 py-1 lg:py-1.5"
             >
               {tag}
             </span>
           ))}
           {extraCount > 0 && (
-            <span className="text-[10px] text-text-secondary border border-border-subtle rounded-full px-2.5 py-1">
+            <span className="text-[10px] lg:text-xs text-text-secondary border border-border-subtle rounded-full px-2.5 lg:px-3 py-1 lg:py-1.5">
               +{extraCount} more
             </span>
           )}
         </div>
 
-        <div className="text-[11px] text-text-secondary mt-2.5">
+        <div className="text-[11px] lg:text-sm text-text-secondary mt-2.5 lg:mt-3.5">
           Starting from{" "}
           <span className="font-semibold text-text-primary tabular-nums">
             &#8377;{cafe.startingHourlyRate}/hr

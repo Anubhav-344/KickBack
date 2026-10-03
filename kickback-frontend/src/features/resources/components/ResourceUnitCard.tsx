@@ -45,7 +45,7 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
             : "opacity-60 cursor-not-allowed"
         }`}
       >
-        <div className="w-1/2 min-h-[110px] flex-shrink-0 bg-gradient-to-br from-bg-raised to-bg-surface overflow-hidden">
+        <div className="w-1/2 min-h-[110px] lg:min-h-[160px] flex-shrink-0 bg-gradient-to-br from-bg-raised to-bg-surface overflow-hidden">
           {unit.imageUrl && (
             <img
               src={unit.imageUrl}
@@ -55,18 +55,18 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
           )}
         </div>
 
-        <div className="flex-1 p-3 flex flex-col justify-center min-w-0">
-          <div className="font-display font-semibold text-base text-text-primary truncate">
+        <div className="flex-1 p-3 lg:p-5 flex flex-col justify-center min-w-0">
+          <div className="font-display font-semibold text-base lg:text-xl text-text-primary truncate">
             {unit.resourceName}
           </div>
-          <div className="text-xs text-text-secondary mt-0.5 tabular-nums">
+          <div className="text-xs lg:text-sm text-text-secondary mt-0.5 tabular-nums">
             &#8377;{unit.hourlyRate}/hr
           </div>
-          <Badge tone={STATUS_TONE[unit.status]} className="mt-2 w-fit">
+          <Badge tone={STATUS_TONE[unit.status]} className="mt-2 lg:mt-3 w-fit lg:text-xs lg:px-2.5 lg:py-1">
             {STATUS_LABELS[unit.status]}
           </Badge>
           {unit.status !== "AVAILABLE" && unit.nextAvailableAt && (
-            <div className="text-[10px] text-text-secondary mt-1 tabular-nums">
+            <div className="text-[10px] lg:text-xs text-text-secondary mt-1 tabular-nums">
               Next free at {unit.nextAvailableAt}
             </div>
           )}

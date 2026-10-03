@@ -13,7 +13,7 @@ export default function BookFloatingButton({ resourceTypes }: BookFloatingButton
       <BookResourceTypeModal
         resourceTypes={resourceTypes}
         trigger={
-          <button className="absolute right-5 bottom-0 pointer-events-auto bg-accent text-bg-base font-semibold text-sm px-6 py-3.5 rounded-pill shadow-accent-glow">
+          <button className="absolute right-5 lg:right-10 bottom-0 lg:bottom-2 pointer-events-auto bg-accent text-bg-base font-semibold text-sm lg:text-base px-6 lg:px-9 py-3.5 lg:py-5 rounded-pill shadow-accent-glow">
             Book now
           </button>
         }

@@ -61,7 +61,7 @@ export default function AvailabilityTimeline({
   const ticks = Array.from({ length: tickCount }, (_, i) => openingMinutes + i * 120);
 
   return (
-    <section className="px-4 py-4 border-b border-border-subtle">
+    <section className="px-4 lg:px-0 py-4 border-b border-border-subtle">
       <div className="text-xs uppercase tracking-wide text-text-secondary mb-2.5">
         Availability
       </div>

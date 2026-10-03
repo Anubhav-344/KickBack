@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
+import AuthSidePanel from "@/components/layout/AuthSidePanel";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { signupSchema, type SignupFormValues } from "@/lib/validators";
@@ -35,23 +36,25 @@ export default function SignupPage() {
 
   return (
     <PageShell>
-      <div className="flex items-center gap-3 px-4 py-3.5">
+      <div className="flex items-center gap-3 px-4 lg:px-10 py-3.5 lg:py-6">
         <button onClick={() => navigate(-1)} aria-label="Go back">
-          <ArrowLeft size={18} className="text-text-secondary" />
+          <ArrowLeft size={18} className="text-text-secondary lg:w-6 lg:h-6" />
         </button>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-accent" />
-          <span className="font-display font-bold text-lg text-text-primary">
+        <div className="flex items-center gap-2 lg:gap-3">
+          <div className="w-6 h-6 lg:w-9 lg:h-9 rounded-md bg-accent" />
+          <span className="font-display font-bold text-lg lg:text-2xl text-text-primary">
             KickBack
           </span>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-6 py-6">
-        <h1 className="font-display font-semibold text-2xl text-text-primary mb-1">
+      <div className="flex-1 flex">
+      <div className="flex-1 lg:w-1/2 flex flex-col justify-center px-6 lg:px-16 py-6 w-full">
+      <div className="w-full max-w-lg mx-auto">
+        <h1 className="font-display font-semibold text-2xl lg:text-4xl text-text-primary mb-1.5">
           Create your account
         </h1>
-        <p className="text-sm text-text-secondary mb-6">
+        <p className="text-sm lg:text-base text-text-secondary mb-7">
           Sign up to start booking gaming sessions
         </p>
 
@@ -121,7 +124,7 @@ export default function SignupPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-text-secondary mt-6">
+        <p className="text-center text-sm lg:text-base text-text-secondary mt-7">
           Already have an account?{" "}
           <Link
             to={redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : "/login"}
@@ -130,6 +133,9 @@ export default function SignupPage() {
             Log in
           </Link>
         </p>
+      </div>
+      </div>
+      <AuthSidePanel className="hidden lg:flex lg:w-1/2" />
       </div>
     </PageShell>
   );

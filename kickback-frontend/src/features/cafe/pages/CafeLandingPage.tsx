@@ -20,7 +20,7 @@ export default function CafeLandingPage() {
 
   if (isLoading) {
     return (
-      <PageShell>
+      <PageShell wide>
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-text-secondary">Loading caf&eacute;...</p>
@@ -32,7 +32,7 @@ export default function CafeLandingPage() {
 
   if (isError || !cafe) {
     return (
-      <PageShell>
+      <PageShell wide>
         <Header />
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <h1 className="font-display font-semibold text-xl text-text-primary mb-2">
@@ -57,7 +57,7 @@ export default function CafeLandingPage() {
   const { isOpenNow, label: statusLabel } = computeCafeOpenStatus(cafe.operatingWindowToday);
 
   return (
-    <PageShell>
+    <PageShell wide>
       <Header />
       <CafeHero images={cafe.images} />
       <CafeMetaRow

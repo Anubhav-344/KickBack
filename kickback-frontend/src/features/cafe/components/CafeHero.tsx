@@ -12,7 +12,7 @@ export default function CafeHero({ images }: CafeHeroProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="relative h-48 overflow-hidden">
+    <div className="relative h-48 sm:h-64 md:h-72 overflow-hidden">
       {images.length === 0 ? (
         <div className="h-full bg-gradient-to-b from-bg-raised to-bg-surface" />
       ) : (
@@ -37,9 +37,9 @@ export default function CafeHero({ images }: CafeHeroProps) {
       <button
         onClick={() => navigate("/")}
         aria-label="Back to Discovery"
-        className="absolute top-3 left-3 w-8 h-8 rounded-full bg-bg-base/70 backdrop-blur-sm flex items-center justify-center"
+        className="absolute top-3 left-3 lg:top-5 lg:left-6 w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-bg-base/70 backdrop-blur-sm flex items-center justify-center"
       >
-        <ArrowLeft size={16} className="text-text-primary" />
+        <ArrowLeft size={16} className="text-text-primary lg:w-5 lg:h-5" />
       </button>
 
       {images.length > 1 && (

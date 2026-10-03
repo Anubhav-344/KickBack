@@ -43,7 +43,7 @@ export default function ProfileMenu() {
       trigger={
         <button
           aria-label="Open account menu"
-          className="w-9 h-9 rounded-full bg-bg-raised border border-border-subtle flex items-center justify-center overflow-hidden"
+          className="w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-bg-raised border border-border-subtle flex items-center justify-center overflow-hidden"
         >
           {avatarUrl ? (
             <img src={avatarUrl} alt="" className="w-full h-full" />

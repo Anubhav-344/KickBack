@@ -45,9 +45,6 @@ export default function BookingPage() {
 
   const createBooking = useCreateBooking();
 
-  // Only reset the draft when switching to a DIFFERENT resource. Without
-  // this guard, returning here from the login redirect (same resourceId)
-  // would wipe the game/time/duration the guest had already picked.
   useEffect(() => {
     const newId = numericResourceId ?? null;
     if (newId !== null && newId !== currentDraftResourceId && cafeSlug) {
@@ -56,13 +53,6 @@ export default function BookingPage() {
     }
   }, [numericResourceId, currentDraftResourceId, cafeSlug, reset, setResource]);
 
-  // "Book" creates the real hold immediately (back to the original design)
-  // — the resource row gets locked server-side right away, so the slot is
-  // actually protected while the user is still on the Preview page picking
-  // an offer and payment method. Any offer chosen there goes through
-  // PATCH /bookings/{id}/offer against this same booking, so Pay never
-  // needs to create anything new — it just charges whatever total that
-  // endpoint most recently returned.
   const handleBook = () => {
     if (!isAuthenticated) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
@@ -83,8 +73,6 @@ export default function BookingPage() {
           navigate(`/bookings/${booking.bookingId}/preview`);
         },
         onError: () => {
-          // 409 (slot taken) already gets its own toast from axiosClient's
-          // global interceptor; this covers other validation failures.
           toast.error("Couldn't hold this slot. Please try again.", { id: "booking-error" });
         },
       }
@@ -125,43 +113,76 @@ export default function BookingPage() {
     );
   }
 
-  // Different games can support different player counts on the same unit
-  // (e.g. a PS5 might allow 1-4 for FIFA but 1-2 for another title) — look
-  // up the selected game's own range, falling back to the resource's own
-  // maxPlayers when no game is picked yet.
   const selectedGame = unit.games?.find((g) => g.gameId === gameId);
 
   return (
     <PageShell>
       <Header />
 
-      <ResourceHeader
-        cafeName={cafe.name}
-        unitName={unit.resourceName}
-        hourlyRate={unit.hourlyRate}
-        maxPlayers={selectedGame?.maxPlayers ?? unit.maxPlayers}
-        minPlayers={selectedGame?.minPlayers}
-        imageUrl={unit.imageUrl}
-      />
+      {/* ============== MOBILE / TABLET (below lg): unchanged single column ============== */}
+      <div className="lg:hidden max-w-xl mx-auto w-full">
+        <ResourceHeader
+          cafeName={cafe.name}
+          unitName={unit.resourceName}
+          hourlyRate={unit.hourlyRate}
+          maxPlayers={selectedGame?.maxPlayers ?? unit.maxPlayers}
+          minPlayers={selectedGame?.minPlayers}
+          imageUrl={unit.imageUrl}
+        />
 
-      <AvailabilityTimeline
-        unitName={unit.resourceName}
-        operatingWindow={availability?.operatingWindow ?? { openingMinutes: 0, closingMinutes: 0, isClosedToday: true }}
-        bookings={availability?.bookings ?? []}
-      />
+        <AvailabilityTimeline
+          unitName={unit.resourceName}
+          operatingWindow={availability?.operatingWindow ?? { openingMinutes: 0, closingMinutes: 0, isClosedToday: true }}
+          bookings={availability?.bookings ?? []}
+        />
 
-      <div className="px-4 py-4">
-        <GameSelectField games={unit.games ?? []} />
-        <StartTimeInput />
-        <DurationEndTimeFields />
+        <div className="px-4 py-4">
+          <GameSelectField games={unit.games ?? []} />
+          <StartTimeInput />
+          <DurationEndTimeFields />
+        </div>
+
+        <PriceSummary
+          hourlyRate={unit.hourlyRate}
+          onBook={handleBook}
+        />
       </div>
 
-      <PriceSummary
-        hourlyRate={unit.hourlyRate}
-        onBook={handleBook}
-      />
+      {/* ============== DESKTOP (lg+): two-column ==============
+          Left column now uses the FULL available width (no max-w cap on
+          the fields section anymore) — everything (header, timeline,
+          fields) aligns to the same left edge via consistent padding. */}
+      <div className="hidden lg:flex gap-12 px-10 xl:px-16 py-10">
+        <div className="flex-1 min-w-0">
+          <ResourceHeader
+            cafeName={cafe.name}
+            unitName={unit.resourceName}
+            hourlyRate={unit.hourlyRate}
+            maxPlayers={selectedGame?.maxPlayers ?? unit.maxPlayers}
+            minPlayers={selectedGame?.minPlayers}
+            imageUrl={unit.imageUrl}
+          />
 
-      <Footer cafeName={cafe.name} locationLabel={cafe.address.city} />
-    </PageShell>
+          <AvailabilityTimeline
+            unitName={unit.resourceName}
+            operatingWindow={availability?.operatingWindow ?? { openingMinutes: 0, closingMinutes: 0, isClosedToday: true }}
+            bookings={availability?.bookings ?? []}
+          />
+
+          <div className="py-4">
+            <GameSelectField games={unit.games ?? []} />
+            <StartTimeInput />
+            <DurationEndTimeFields />
+          </div>
+        </div>
+
+        <div className="w-[380px] flex-shrink-0 sticky top-10 self-start">
+          <div className="bg-bg-surface border border-border-subtle rounded-2xl">
+            <PriceSummary hourlyRate={unit.hourlyRate} onBook={handleBook} />
+          </div>
+        </div>
+      </div>
+
+          </PageShell>
   );
 }

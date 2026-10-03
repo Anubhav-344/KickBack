@@ -33,9 +33,9 @@ export default function OfferSlider({ offers }: OfferSliderProps) {
   };
 
   return (
-    <section className="px-4 py-4 border-b border-border-subtle">
+    <section className="px-4 lg:px-8 py-4 border-b border-border-subtle">
       <div className="flex items-center justify-between mb-2.5">
-        <h2 className="text-xs uppercase tracking-wide text-text-secondary">
+        <h2 className="text-xs lg:text-sm uppercase tracking-wide text-text-secondary">
           Offers
         </h2>
         {canExpand && (
@@ -66,7 +66,7 @@ export default function OfferSlider({ offers }: OfferSliderProps) {
               // actual card comes from this wrapper's own padding, not from a
               // flex gap (a gap smaller than the padding is what caused the
               // peek in the first place).
-              <div key={offer.offerId} className="snap-start shrink-0 w-full px-4">
+              <div key={offer.offerId} className="snap-start shrink-0 w-full max-w-md px-4">
                 <OfferCard offer={offer} />
               </div>
             ))}

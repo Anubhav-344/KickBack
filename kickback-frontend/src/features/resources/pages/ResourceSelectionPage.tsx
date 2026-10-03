@@ -74,8 +74,8 @@ export default function ResourceSelectionPage() {
         allResourceTypes={cafe.resourceTypes}
       />
 
-      <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-        <span className="text-sm font-medium text-text-secondary">Filters</span>
+      <div className="flex items-center justify-between px-4 lg:px-8 pt-4 pb-2 border-t border-border-subtle mt-4">
+        <span className="text-sm lg:text-base font-medium text-text-secondary">Filters</span>
         <GameFilter
           games={allGames}
           selectedGameId={selectedGameId}
@@ -83,7 +83,7 @@ export default function ResourceSelectionPage() {
         />
       </div>
 
-      <div className="flex flex-col gap-2.5 px-4 pb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 px-4 lg:px-8 pb-5">
         {filteredUnits.map((unit) => (
           <ResourceUnitCard key={unit.resourceId} unit={unit} />
         ))}

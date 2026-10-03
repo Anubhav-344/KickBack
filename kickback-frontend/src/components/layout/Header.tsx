@@ -11,10 +11,10 @@ export default function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
+    <header className="flex items-center justify-between px-4 lg:px-8 py-3 lg:py-5 border-b border-border-subtle">
       <div className="flex items-center">
-        <div className="w-6 h-6 rounded-md bg-accent" />
-        <span className="ml-2.5 font-display font-bold text-lg text-text-primary">
+        <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-md bg-accent" />
+        <span className="ml-2.5 font-display font-bold text-lg lg:text-xl text-text-primary">
           KickBack
         </span>
       </div>
@@ -24,7 +24,7 @@ export default function Header() {
       ) : (
         <Link
           to="/login"
-          className="text-sm font-semibold text-accent-hover border border-accent/40 rounded-md px-3.5 py-1.5"
+          className="text-sm lg:text-base font-semibold text-accent-hover border border-accent/40 rounded-md px-3.5 lg:px-5 py-1.5 lg:py-2"
         >
           Log in
         </Link>

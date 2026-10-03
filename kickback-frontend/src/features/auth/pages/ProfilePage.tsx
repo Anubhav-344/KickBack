@@ -7,7 +7,7 @@ import { LogOut, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import AuthSidePanel from "@/components/layout/AuthSidePanel";
 import Input from "@/components/ui/Input";
 import { profileSchema, type ProfileFormValues } from "@/lib/validators";
 import { useUserProfile, useUpdateProfile } from "../hooks/useUpdateProfile";
@@ -27,8 +27,6 @@ export default function ProfilePage() {
     formState: { errors, isDirty },
   } = useForm<ProfileFormValues>({ resolver: zodResolver(profileSchema) });
 
-  // Populate the form once the real profile loads — can't set defaultValues
-  // up front since the data arrives asynchronously.
   useEffect(() => {
     if (profile) {
       reset({
@@ -44,11 +42,6 @@ export default function ProfilePage() {
   const onSubmit = (values: ProfileFormValues) => {
     updateProfile.mutate(values, {
       onSuccess: () => {
-        // Re-baseline the form to what was just saved — without this,
-        // isDirty stays true forever after the first save, since the form
-        // keeps comparing against the ORIGINAL values it loaded with, not
-        // what's now actually persisted. That's what let Save stay
-        // clickable indefinitely even with nothing new to save.
         reset(values);
         toast.success("Profile updated");
       },
@@ -65,8 +58,10 @@ export default function ProfilePage() {
     <PageShell>
       <Header />
 
-      <div className="px-4 py-5">
-        <div className="flex items-center gap-2.5 mb-5">
+      <div className="flex-1 flex">
+      <div className="flex-1 lg:w-1/2 px-4 lg:px-16 py-6 lg:py-8 w-full">
+      <div className="max-w-md mx-auto w-full">
+        <div className="flex items-center gap-2.5 mb-6">
           <button onClick={() => navigate(-1)} aria-label="Go back">
             <ArrowLeft size={18} className="text-text-secondary" />
           </button>
@@ -131,14 +126,16 @@ export default function ProfilePage() {
 
         <button
           onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full mt-4 py-3 text-sm font-medium text-state-error"
+          className="flex items-center justify-center gap-2 w-full mt-5 py-3 text-sm font-medium text-state-error"
         >
           <LogOut size={15} />
           Log out
         </button>
       </div>
+      </div>
+      <AuthSidePanel className="hidden lg:flex lg:w-1/2" />
+      </div>
 
-      <Footer />
     </PageShell>
   );
 }

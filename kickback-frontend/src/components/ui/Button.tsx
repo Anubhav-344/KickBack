@@ -14,8 +14,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 // Consolidates the primary/secondary/ghost button styling that was
 // duplicated across 9+ files (LoginPage, SignupPage, ProfilePage,
 // BookingPreviewPage, BookFloatingButton, etc.) into one source of truth.
-// Existing one-off buttons can be migrated to this incrementally — nothing
-// breaks by leaving some unmigrated for now.
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: "bg-accent hover:bg-accent-hover text-bg-base shadow-accent-glow",
   secondary: "bg-bg-surface hover:bg-bg-raised border border-border-subtle text-text-primary",
@@ -42,8 +40,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`font-semibold text-sm transition-opacity disabled:opacity-50 ${
-          isGhost ? "text-xs font-medium py-1" : "py-3.5 rounded-card"
+        className={`font-semibold text-base transition-opacity disabled:opacity-50 ${
+          isGhost ? "text-xs font-medium py-1" : "py-4 rounded-card"
         } ${fullWidth && !isGhost ? "w-full" : ""} ${VARIANT_CLASSES[variant]} ${className ?? ""}`}
         {...props}
       >

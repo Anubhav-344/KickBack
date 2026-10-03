@@ -57,29 +57,29 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
   };
 
   return (
-    <div className="bg-bg-surface border border-border-subtle rounded-card p-3.5">
+    <div className="bg-bg-surface border border-border-subtle rounded-card p-3.5 lg:p-5">
       <div className="flex items-start justify-between">
         <button
           onClick={() => navigate(`/cafes/${booking.cafeSlug}`)}
           className="text-left"
         >
-          <div className="font-display font-semibold text-base text-text-primary">
+          <div className="font-display font-semibold text-base lg:text-lg text-text-primary">
             {booking.cafeName}
           </div>
-          <div className="text-xs text-text-secondary mt-0.5">{booking.resourceName}</div>
+          <div className="text-xs lg:text-sm text-text-secondary mt-0.5">{booking.resourceName}</div>
         </button>
         <Badge tone={STATUS_TONE[booking.status]} className="flex-shrink-0">
           {booking.status}
         </Badge>
       </div>
 
-      <div className="text-xs text-text-secondary mt-2.5 tabular-nums">
+      <div className="text-xs lg:text-sm text-text-secondary mt-2.5 tabular-nums">
         {dateLabel} &middot; {formatMinutesAsTime(startMinutes)} &ndash;{" "}
         {formatMinutesAsTime(endMinutes)}
       </div>
 
       <div className="flex items-center justify-between mt-2.5">
-        <span className="text-sm font-semibold text-text-primary tabular-nums">
+        <span className="text-sm lg:text-base font-semibold text-text-primary tabular-nums">
           &#8377;{booking.totalAmount}
         </span>
 
@@ -89,7 +89,7 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
             onOpenChange={setConfirmOpen}
             title="Cancel this booking?"
             trigger={
-              <button className="text-xs font-medium text-state-error">Cancel</button>
+              <button className="text-xs lg:text-sm font-medium text-state-error">Cancel</button>
             }
           >
             <p className="text-sm text-text-secondary mb-4">
