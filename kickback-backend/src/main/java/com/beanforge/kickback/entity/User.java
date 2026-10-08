@@ -1,6 +1,7 @@
 package com.beanforge.kickback.entity;
 
 import com.beanforge.kickback.enums.Role;
+import com.beanforge.kickback.enums.Theme;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -53,4 +56,21 @@ public class User extends BaseEntity {
     // moderation needed). Nullable: a new user has no avatar chosen yet.
     @Column(name = "avatar_id")
     private Integer avatarId;
+
+    // Colour theme chosen in Settings > Appearance. Nullable on purpose: null
+    // means "never chose", so the browser's own saved choice (or the dark
+    // default) stays in charge until the user picks one.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "theme", length = 10)
+    private Theme theme;
+
+    // Set when the user deletes their account. The row is kept (bookings and
+    // reviews point at it, and cafes need their history) but every personal
+    // field is scrubbed, so nothing identifies the person any more.
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
 }

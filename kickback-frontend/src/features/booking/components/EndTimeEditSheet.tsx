@@ -2,8 +2,10 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import BottomSheet from "@/components/ui/BottomSheet";
+import CenteredModal from "@/components/ui/CenteredModal";
 import Button from "@/components/ui/Button";
 import { minutesToParts, partsToMinutes } from "@/lib/dateTime";
+import { AmPmToggle, TimeStepperBlock } from "./TimeControls";
 
 interface EndTimeEditSheetProps {
   currentEndMinutes: number;
@@ -21,7 +23,10 @@ export default function EndTimeEditSheet({
   onConfirm,
   trigger,
 }: EndTimeEditSheetProps) {
-  const [open, setOpen] = useState(false);
+  // Separate open states for the mobile sheet and the desktop modal: both
+  // render in a portal, so sharing one flag would open both (see CenteredModal).
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [draftMinutes, setDraftMinutes] = useState(currentEndMinutes);
 
   const { hour12, minute, isPM } = minutesToParts(draftMinutes);
@@ -42,77 +47,81 @@ export default function EndTimeEditSheet({
 
   const setAmPm = (pm: boolean) => setDraftMinutes(partsToMinutes(hour12, minute, pm));
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) setDraftMinutes(currentEndMinutes); // reset draft each time it opens
-    setOpen(next);
-  };
+  const setHour = (n: number) => setDraftMinutes(partsToMinutes(n, minute, isPM));
+  const setMinute = (n: number) => setDraftMinutes(partsToMinutes(hour12, n, isPM));
 
-  return (
-    <BottomSheet open={open} onOpenChange={handleOpenChange} title="Set end time" trigger={trigger}>
+  const resetDraft = () => setDraftMinutes(currentEndMinutes); // fresh each time it opens
+
+  const body = (
+    <>
       <div className="flex gap-2 mb-5">
-        <Stepper label="HOUR" value={String(hour12).padStart(2, "0")} onDecrement={() => adjustHour(-1)} onIncrement={() => adjustHour(1)} />
-        <Stepper label="MIN" value={String(minute).padStart(2, "0")} onDecrement={() => adjustMinute(-1)} onIncrement={() => adjustMinute(1)} />
-        <div className="flex-none w-16 bg-bg-surface border border-border-subtle rounded-card p-2.5 flex flex-col gap-1">
-          <button
-            onClick={() => setAmPm(false)}
-            className={`text-center text-xs font-semibold py-1.5 rounded-md transition-colors ${
-              !isPM ? "bg-accent text-bg-base" : "text-text-secondary"
-            }`}
-          >
-            AM
-          </button>
-          <button
-            onClick={() => setAmPm(true)}
-            className={`text-center text-xs font-semibold py-1.5 rounded-md transition-colors ${
-              isPM ? "bg-accent text-bg-base" : "text-text-secondary"
-            }`}
-          >
-            PM
-          </button>
-        </div>
+        <TimeStepperBlock
+          label="HOUR"
+          spokenLabel="hour"
+          value={String(hour12).padStart(2, "0")}
+          onDecrement={() => adjustHour(-1)}
+          onIncrement={() => adjustHour(1)}
+          onSet={setHour}
+          min={1}
+          max={12}
+        />
+        <TimeStepperBlock
+          label="MIN"
+          spokenLabel="minute"
+          value={String(minute).padStart(2, "0")}
+          onDecrement={() => adjustMinute(-1)}
+          onIncrement={() => adjustMinute(1)}
+          onSet={setMinute}
+          min={0}
+          max={59}
+        />
+        <AmPmToggle isPM={isPM} onChange={setAmPm} />
       </div>
 
       <Button
         onClick={() => {
           onConfirm(draftMinutes);
-          setOpen(false);
+          setSheetOpen(false);
+          setModalOpen(false);
         }}
       >
         Done
       </Button>
-    </BottomSheet>
+    </>
   );
-}
 
-function Stepper({
-  label,
-  value,
-  onDecrement,
-  onIncrement,
-}: {
-  label: string;
-  value: string;
-  onDecrement: () => void;
-  onIncrement: () => void;
-}) {
   return (
-    <div className="flex-1 bg-bg-surface border border-border-subtle rounded-card p-2.5">
-      <div className="text-[10px] text-text-secondary text-center mb-1">{label}</div>
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onDecrement}
-          className="w-[22px] h-[22px] rounded-md bg-bg-raised flex items-center justify-center text-xs font-semibold text-text-primary"
+    <>
+      {/* Mobile/tablet: bottom sheet */}
+      <div className="contents lg:hidden">
+        <BottomSheet
+          open={sheetOpen}
+          onOpenChange={(next) => {
+            if (next) resetDraft();
+            setSheetOpen(next);
+          }}
+          title="Set end time"
+          trigger={trigger}
         >
-          {"\u2212"}
-        </button>
-        <span className="font-semibold text-base text-text-primary tabular-nums">{value}</span>
-        <button
-          onClick={onIncrement}
-          className="w-[22px] h-[22px] rounded-md bg-bg-raised flex items-center justify-center text-xs font-semibold text-text-primary"
-        >
-          +
-        </button>
+          {body}
+        </BottomSheet>
       </div>
-    </div>
+
+      {/* Desktop: centered modal */}
+      <div className="hidden lg:contents">
+        <CenteredModal
+          open={modalOpen}
+          onOpenChange={(next) => {
+            if (next) resetDraft();
+            setModalOpen(next);
+          }}
+          title="Set end time"
+          trigger={trigger}
+          size="sm"
+        >
+          {body}
+        </CenteredModal>
+      </div>
+    </>
   );
 }

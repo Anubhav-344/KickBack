@@ -15,10 +15,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 // duplicated across 9+ files (LoginPage, SignupPage, ProfilePage,
 // BookingPreviewPage, BookFloatingButton, etc.) into one source of truth.
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-accent hover:bg-accent-hover text-bg-base shadow-accent-glow",
+  primary: "bg-accent hover:bg-accent-hover text-on-accent shadow-accent-glow",
   secondary: "bg-bg-surface hover:bg-bg-raised border border-border-subtle text-text-primary",
-  ghost: "bg-transparent hover:underline text-accent-hover",
-  destructive: "bg-state-error hover:opacity-90 text-bg-base",
+  ghost: "bg-transparent hover:underline text-accent-text",
+  destructive: "bg-state-error hover:opacity-90 text-on-error",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -40,6 +40,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
+        aria-busy={isLoading || undefined}
         className={`font-semibold text-base transition-opacity disabled:opacity-50 ${
           isGhost ? "text-xs font-medium py-1" : "py-4 rounded-card"
         } ${fullWidth && !isGhost ? "w-full" : ""} ${VARIANT_CLASSES[variant]} ${className ?? ""}`}

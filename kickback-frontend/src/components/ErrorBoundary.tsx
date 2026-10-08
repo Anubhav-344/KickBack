@@ -41,7 +41,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="text-sm font-semibold text-accent-hover border border-accent/40 rounded-md px-4 py-2"
+            className="text-sm font-semibold text-accent-text border border-accent/40 rounded-md px-4 py-2"
           >
             Reload
           </button>

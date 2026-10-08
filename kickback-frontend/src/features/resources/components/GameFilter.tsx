@@ -33,6 +33,8 @@ export default function GameFilter({ games, selectedGameId, onSelect }: GameFilt
           <div className="flex flex-col gap-2">
             <Dialog.Close asChild>
               <button
+                type="button"
+                aria-current={selectedGameId === null ? "true" : undefined}
                 onClick={() => onSelect(null)}
                 className={`text-left px-3.5 py-2.5 rounded-card border transition-colors ${
                   selectedGameId === null
@@ -46,6 +48,8 @@ export default function GameFilter({ games, selectedGameId, onSelect }: GameFilt
             {games.map((game) => (
               <Dialog.Close asChild key={game.gameId}>
                 <button
+                  type="button"
+                  aria-current={selectedGameId === game.gameId ? "true" : undefined}
                   onClick={() => onSelect(game.gameId)}
                   className={`text-left px-3.5 py-2.5 rounded-card border transition-colors ${
                     selectedGameId === game.gameId

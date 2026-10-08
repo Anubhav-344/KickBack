@@ -5,6 +5,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
 import AuthSidePanel from "@/components/layout/AuthSidePanel";
+import { LogoMark } from "@/components/ui/Logo";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { signupSchema, type SignupFormValues } from "@/lib/validators";
@@ -35,17 +36,17 @@ export default function SignupPage() {
   };
 
   return (
-    <PageShell>
+    <PageShell title="Create account">
       <div className="flex items-center gap-3 px-4 lg:px-10 py-3.5 lg:py-6">
         <button onClick={() => navigate(-1)} aria-label="Go back">
           <ArrowLeft size={18} className="text-text-secondary lg:w-6 lg:h-6" />
         </button>
-        <div className="flex items-center gap-2 lg:gap-3">
-          <div className="w-6 h-6 lg:w-9 lg:h-9 rounded-md bg-accent" />
+        <Link to="/" className="flex items-center gap-2 lg:gap-3">
+          <LogoMark className="w-6 h-6 lg:w-9 lg:h-9" />
           <span className="font-display font-bold text-lg lg:text-2xl text-text-primary">
             KickBack
           </span>
-        </div>
+        </Link>
       </div>
 
       <div className="flex-1 flex">
@@ -128,7 +129,7 @@ export default function SignupPage() {
           Already have an account?{" "}
           <Link
             to={redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : "/login"}
-            className="text-accent-hover font-medium"
+            className="text-accent-text font-medium"
           >
             Log in
           </Link>

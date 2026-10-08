@@ -4,6 +4,7 @@ import { CheckCircle2 } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { BookingConfirmationSkeleton } from "../components/BookingSkeletons";
 import BookingSummaryCard from "../components/BookingSummaryCard";
 import SuccessBurst from "../components/SuccessBurst";
 import { useBookingDetails } from "../hooks/useBookingDetails";
@@ -25,9 +26,7 @@ export default function BookingConfirmationPage() {
     return (
       <PageShell>
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-text-secondary">Loading...</p>
-        </div>
+        <BookingConfirmationSkeleton />
         <Footer />
       </PageShell>
     );
@@ -43,7 +42,7 @@ export default function BookingConfirmationPage() {
           </p>
           <button
             onClick={() => navigate("/bookings")}
-            className="text-sm font-semibold text-accent-hover border border-accent/40 rounded-md px-4 py-2"
+            className="text-sm font-semibold text-accent-text border border-accent/40 rounded-md px-4 py-2"
           >
             View My Bookings
           </button>
@@ -58,7 +57,7 @@ export default function BookingConfirmationPage() {
   const dateLabel = formatDateLabel(booking.startTimestamp.slice(0, 10));
 
   return (
-    <PageShell>
+    <PageShell title="Booking confirmed">
       <Header />
 
       <div className="max-w-xl mx-auto w-full">
@@ -107,7 +106,7 @@ export default function BookingConfirmationPage() {
       <div className="px-4 py-4 flex flex-col gap-2.5">
         <button
           onClick={() => navigate("/bookings")}
-          className="w-full bg-accent text-bg-base font-semibold text-sm py-3.5 rounded-card shadow-accent-glow"
+          className="w-full bg-accent text-on-accent font-semibold text-sm py-3.5 rounded-card shadow-accent-glow"
         >
           View My Bookings
         </button>

@@ -78,7 +78,7 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
         <button
           onClick={handleCancel}
           disabled={cancelBooking.isPending}
-          className="flex-1 bg-state-error text-bg-base text-sm font-semibold py-3 lg:py-3.5 rounded-card disabled:opacity-60"
+          className="flex-1 bg-state-error text-on-error text-sm font-semibold py-3 lg:py-3.5 rounded-card disabled:opacity-60"
         >
           {cancelBooking.isPending ? "Cancelling..." : "Yes, cancel"}
         </button>
@@ -147,7 +147,7 @@ export default function BookingListCard({ booking }: BookingListCardProps) {
             bookingId={booking.bookingId}
             cafeName={booking.cafeName}
             trigger={
-              <button className="text-xs lg:text-sm font-medium text-accent-hover">
+              <button className="text-xs lg:text-sm font-medium text-accent-text">
                 Leave a review
               </button>
             }

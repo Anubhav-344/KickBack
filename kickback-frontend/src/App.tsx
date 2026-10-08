@@ -4,25 +4,38 @@ import { RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { queryClient } from "@/app/queryClient";
 import { router } from "@/app/router";
+import ThemeSync from "@/features/auth/components/ThemeSync";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <ThemeSync />
         <RouterProvider router={router} />
         <Toaster
           position="top-center"
           toastOptions={{
             style: {
-              background: "#1C1F26", // bg-surface
-              color: "#F2F0EA", // text-primary
-              border: "1px solid #2E323D", // border-subtle
+              // CSS variables, so toasts follow the light/dark theme
+              background: "var(--color-bg-surface)",
+              color: "var(--color-text-primary)",
+              border: "1px solid var(--color-border-subtle)",
               fontFamily: "'Inter', sans-serif",
               fontSize: "14px",
             },
-            success: { iconTheme: { primary: "#3DDC8C", secondary: "#1C1F26" } },
-            error: { iconTheme: { primary: "#F2495C", secondary: "#1C1F26" } },
+            success: {
+              iconTheme: {
+                primary: "var(--color-state-available)",
+                secondary: "var(--color-bg-surface)",
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: "var(--color-state-error)",
+                secondary: "var(--color-bg-surface)",
+              },
+            },
           }}
         />
       </QueryClientProvider>

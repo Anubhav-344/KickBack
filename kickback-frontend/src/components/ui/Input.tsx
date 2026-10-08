@@ -1,5 +1,5 @@
 // src/components/ui/Input.tsx
-import { forwardRef, useState } from "react";
+import { forwardRef, useId, useState } from "react";
 import type { InputHTMLAttributes } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -13,14 +13,23 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className, type, compact = false, ...props }, ref) => {
+  ({ label, error, className, type, compact = false, id, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
     const resolvedType = isPassword ? (showPassword ? "text" : "password") : type;
 
+    // The <label> is tied to the <input> by id, so clicking the label focuses
+    // the field and screen readers announce the label when the field is
+    // focused. The error text is linked too (aria-describedby) and announced
+    // as soon as it appears (role="alert").
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const errorId = `${inputId}-error`;
+
     return (
       <div className={compact ? "mb-3" : "mb-5"}>
         <label
+          htmlFor={inputId}
           className={`block text-text-secondary ${compact ? "text-xs mb-1" : "text-sm mb-2"}`}
         >
           {label}
@@ -28,21 +37,25 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           <input
             ref={ref}
+            id={inputId}
             type={resolvedType}
-            className={`w-full bg-bg-surface border rounded-card text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors ${
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId : undefined}
+            className={`w-full bg-bg-surface border rounded-card text-text-primary placeholder:text-text-secondary focus:border-accent transition-colors ${
               compact ? "px-3.5 py-2.5 text-sm" : "px-4 py-3.5 text-base"
             } ${isPassword ? (compact ? "pr-10" : "pr-12") : ""} ${
-              error ? "border-state-error" : "border-border-subtle"
+              error ? "border-state-error" : "border-border-strong"
             } ${className ?? ""}`}
             {...props}
           />
           {isPassword && (
+            // Keyboard users can reach this now (it used to be tabIndex={-1}).
+            // p-1 grows the hit area; right-2.5 keeps the icon where it was.
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              tabIndex={-1}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-text-secondary"
             >
               {showPassword ? (
                 <EyeOff size={compact ? 15 : 18} />
@@ -53,7 +66,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className={`text-state-error ${compact ? "text-[10px] mt-1" : "text-xs mt-1.5"}`}>
+          <p
+            id={errorId}
+            role="alert"
+            className={`text-state-error ${compact ? "text-[10px] mt-1" : "text-xs mt-1.5"}`}
+          >
             {error}
           </p>
         )}

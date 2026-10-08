@@ -41,7 +41,7 @@ export default function OfferSlider({ offers }: OfferSliderProps) {
         {canExpand && (
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="flex items-center gap-1 text-xs font-medium text-accent-hover"
+            className="flex items-center gap-1 text-xs font-medium text-accent-text"
           >
             View all
             <ChevronDown
@@ -109,7 +109,7 @@ function OfferCard({ offer }: { offer: Offer }) {
         <div className="text-xs text-text-secondary mt-0.5">{formatOfferSub(offer)}</div>
       </div>
       {offer.promoCode && (
-        <div className="text-xs font-medium text-accent-hover bg-accent/15 rounded-md px-2 py-1 flex-shrink-0 ml-2">
+        <div className="text-xs font-medium text-accent-text bg-accent/15 rounded-md px-2 py-1 flex-shrink-0 ml-2">
           {offer.promoCode}
         </div>
       )}

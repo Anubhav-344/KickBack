@@ -4,6 +4,8 @@ import { Search } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { CafeListingSkeleton } from "../components/CafeSkeletons";
 import CafeListingCard from "../components/CafeListingCard";
 import ResourceTypeFilterChips from "../components/ResourceTypeFilterChips";
 import { computeCafeOpenStatus } from "@/lib/cafeStatus";
@@ -54,7 +56,7 @@ export default function CafeDiscoveryPage() {
   }, [cafes, searchQuery, selectedTypes, openNowOnly]);
 
   return (
-    <PageShell>
+    <PageShell title="Find a gaming café">
       <Header />
 
       <div className="px-4 lg:px-8 pt-4 lg:pt-10">
@@ -67,9 +69,10 @@ export default function CafeDiscoveryPage() {
       </div>
 
       <div className="px-4 lg:px-8 py-4 lg:py-6">
-        <div className="flex items-center gap-2.5 bg-bg-surface border border-border-subtle rounded-card px-3.5 lg:px-5 py-3 lg:py-4 lg:max-w-xl">
+        <div className="flex items-center gap-2.5 bg-bg-surface border border-border-strong rounded-card px-3.5 lg:px-5 py-3 lg:py-4 lg:max-w-xl focus-within:border-accent focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-2">
           <Search size={15} className="text-text-secondary lg:w-[18px] lg:h-[18px]" />
           <input
+            aria-label="Search cafés or areas"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search cafés or areas..."
@@ -89,15 +92,13 @@ export default function CafeDiscoveryPage() {
 
       <div className="text-xs uppercase tracking-wide text-text-secondary px-4 lg:px-8 pb-2.5">
         {isLoading
-          ? "Loading caf\u00E9s..."
+          ? <Skeleton className="h-4 w-28" />
           : `${filteredAndSortedCafes.length} ${filteredAndSortedCafes.length === 1 ? "caf\u00E9" : "caf\u00E9s"} in Bhopal`}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 px-4 lg:px-8 pb-6">
         {isLoading ? (
-          <div className="col-span-full text-sm text-text-secondary text-center py-10">
-            Loading caf&eacute;s...
-          </div>
+          <CafeListingSkeleton />
         ) : isError ? (
           <div className="col-span-full text-sm text-state-error text-center py-10">
             Couldn&apos;t load caf&eacute;s. Please try again.

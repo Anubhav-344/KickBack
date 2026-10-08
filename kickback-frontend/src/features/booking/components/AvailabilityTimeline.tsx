@@ -4,7 +4,7 @@ import { CalendarDays } from "lucide-react";
 import type { ExistingBooking, OperatingWindow } from "../types";
 import { computeTimelineSegments, computeAvailableGaps } from "../utils/timelineSegments";
 import { useBookingDraftStore, useBookingEndMinutes } from "../store/useBookingDraftStore";
-import { formatDateLabel, todayISO } from "@/lib/dateTime";
+import { formatDateLabel, formatMinutesAsTime, todayISO } from "@/lib/dateTime";
 import AvailableSlotsSheet from "./AvailableSlotsSheet";
 
 const SEGMENT_COLOR: Record<string, string> = {
@@ -47,6 +47,16 @@ export default function AvailabilityTimeline({
 
   const dateLabel = formatDateLabel(selectedDate);
 
+  // The bar below is purely visual, so give assistive tech the same
+  // information in words: what's booked, and where the user's own slot sits.
+  const bookedSummary =
+    bookings.length === 0
+      ? "nothing booked yet"
+      : bookings
+          .map((b) => `${formatMinutesAsTime(b.startMinutes)} to ${formatMinutesAsTime(b.endMinutes)}`)
+          .join(", ");
+  const timelineLabel = `Availability on ${dateLabel}. Booked: ${bookedSummary}. Your slot: ${formatMinutesAsTime(startMinutes)} to ${formatMinutesAsTime(endMinutes)}. Opens the list of available times.`;
+
   const { openingMinutes, closingMinutes } = operatingWindow;
   const totalSpan = closingMinutes - openingMinutes;
 
@@ -62,9 +72,9 @@ export default function AvailabilityTimeline({
 
   return (
     <section className="px-4 lg:px-0 py-4 border-b border-border-subtle">
-      <div className="text-xs uppercase tracking-wide text-text-secondary mb-2.5">
+      <h2 className="text-xs uppercase tracking-wide text-text-secondary mb-2.5">
         Availability
-      </div>
+      </h2>
 
       {/* Full-width date selector. The styled pill below is purely visual;
           a real (invisible) <input type="date"> sits on top of it and
@@ -74,6 +84,7 @@ export default function AvailabilityTimeline({
         <button
           type="button"
           onClick={openDatePicker}
+          aria-label={`Choose booking date, currently ${dateLabel}`}
           className="w-full flex items-center justify-between bg-bg-surface border border-border-subtle rounded-card px-3.5 py-3 hover:border-accent/40 active:scale-[0.98] transition"
         >
           <span className="text-sm font-medium text-text-primary">{dateLabel}</span>
@@ -103,15 +114,21 @@ export default function AvailabilityTimeline({
               dateLabel={dateLabel}
               gaps={gaps}
               trigger={
-                <div className="flex h-[26px] rounded-md overflow-hidden gap-px cursor-pointer">
+                // A real <button> (it was a clickable <div>, unreachable by keyboard
+                // and with no label). Segments are <span>s: valid inside a button.
+                <button
+                  type="button"
+                  aria-label={timelineLabel}
+                  className="flex w-full h-[26px] rounded-md overflow-hidden gap-px cursor-pointer"
+                >
                   {segments.map((seg, i) => (
-                    <div
+                    <span
                       key={i}
-                      className={SEGMENT_COLOR[seg.type]}
+                      className={`block ${SEGMENT_COLOR[seg.type]}`}
                       style={{ flex: seg.endMinutes - seg.startMinutes }}
                     />
                   ))}
-                </div>
+                </button>
               }
             />
 
@@ -132,7 +149,7 @@ export default function AvailabilityTimeline({
               dateLabel={dateLabel}
               gaps={gaps}
               trigger={
-                <button className="block ml-auto mt-2.5 text-[11px] font-medium text-accent-hover">
+                <button className="block ml-auto mt-2.5 text-[11px] font-medium text-accent-text">
                   Show more details &#8250;
                 </button>
               }

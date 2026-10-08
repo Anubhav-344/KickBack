@@ -34,10 +34,16 @@ export default function HoldCountdown({ expiresAt, onExpire }: HoldCountdownProp
           : "bg-state-pending/10 border-state-pending/35"
       }`}
     >
-      <span className={`text-xs font-medium ${isExpired ? "text-state-error" : "text-state-pending"}`}>
+      <span
+        role={isExpired ? "alert" : undefined}
+        className={`text-xs font-medium ${isExpired ? "text-state-error-text" : "text-state-pending"}`}
+      >
         {isExpired ? "Hold expired — slot released" : "Complete payment to confirm your slot"}
       </span>
-      <span className={`font-semibold text-sm tabular-nums ${isExpired ? "text-state-error" : "text-state-pending"}`}>
+      <span
+        role="timer"
+        className={`font-semibold text-sm tabular-nums ${isExpired ? "text-state-error-text" : "text-state-pending"}`}
+      >
         {mm}:{ss}
       </span>
     </div>

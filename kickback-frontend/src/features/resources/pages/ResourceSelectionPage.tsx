@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { ResourceSelectionSkeleton } from "../components/ResourceSelectionSkeleton";
 import ResourceBreadcrumb from "../components/ResourceBreadcrumb";
 import ResourceUnitCard from "../components/ResourceUnitCard";
 import GameFilter from "../components/GameFilter";
@@ -25,9 +26,7 @@ export default function ResourceSelectionPage() {
     return (
       <PageShell>
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-text-secondary">Loading...</p>
-        </div>
+        <ResourceSelectionSkeleton />
         <Footer />
       </PageShell>
     );
@@ -43,7 +42,7 @@ export default function ResourceSelectionPage() {
           </p>
           <Link
             to={cafe ? `/cafes/${cafe.slug}` : "/"}
-            className="text-sm font-semibold text-accent-hover border border-accent/40 rounded-md px-4 py-2"
+            className="text-sm font-semibold text-accent-text border border-accent/40 rounded-md px-4 py-2"
           >
             {cafe ? "Back to Caf\u00E9" : "Back to Discovery"}
           </Link>
@@ -65,8 +64,12 @@ export default function ResourceSelectionPage() {
     : allUnits;
 
   return (
-    <PageShell>
+    <PageShell title={`${currentResourceType.resourceName} at ${cafe.name}`}>
       <Header />
+
+      <h1 className="sr-only">
+        {currentResourceType.resourceName} at {cafe.name}
+      </h1>
 
       <ResourceBreadcrumb
         cafeName={cafe.name}

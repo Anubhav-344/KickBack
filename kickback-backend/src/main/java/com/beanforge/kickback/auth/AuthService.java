@@ -81,7 +81,8 @@ public class AuthService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getRole().name(),
-                user.getAvatarId()
+                user.getAvatarId(),
+                user.getTheme() == null ? null : user.getTheme().name()
         );
     }
 }

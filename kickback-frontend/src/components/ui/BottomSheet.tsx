@@ -29,6 +29,7 @@ export default function BottomSheet({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-30" />
         <Dialog.Content
+          aria-describedby={undefined}
           className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-app
                      bg-bg-surface border border-border-subtle border-b-0
                      rounded-t-[20px] p-4 pb-6 z-40 shadow-surface-raised

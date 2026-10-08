@@ -58,7 +58,7 @@ export default function AboutSection({ cafe }: AboutSectionProps) {
           <IconBadge>
             <MapPin size={12} className="lg:w-[14px] lg:h-[14px]" />
           </IconBadge>
-          <span className="text-accent-hover underline">
+          <span className="text-accent-text underline">
             {cafe.address.addressLine1}, {locationText} &mdash; Get directions
           </span>
         </a>

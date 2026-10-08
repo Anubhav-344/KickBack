@@ -12,7 +12,7 @@ export default function StarRatingInput({ value, onChange }: StarRatingInputProp
   const display = hovered ?? value;
 
   return (
-    <div className="flex gap-1.5">
+    <div role="group" aria-label="Rating out of 5 stars" className="flex gap-1.5">
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
@@ -21,11 +21,12 @@ export default function StarRatingInput({ value, onChange }: StarRatingInputProp
           onMouseEnter={() => setHovered(n)}
           onMouseLeave={() => setHovered(null)}
           aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
+          aria-pressed={n === value}
         >
           <Star
             size={30}
             className={
-              n <= display ? "fill-state-pending text-state-pending" : "text-border-subtle"
+              n <= display ? "fill-state-pending text-state-pending" : "text-border-strong"
             }
           />
         </button>

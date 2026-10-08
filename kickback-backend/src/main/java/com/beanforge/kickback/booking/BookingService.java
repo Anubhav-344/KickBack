@@ -263,8 +263,12 @@ public class BookingService {
     @Transactional(readOnly = true)
     public List<BookingSummaryResponse> getMyBookings(Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
+        // EXPIRED = an unpaid hold that lapsed. The user never actually had
+        // that booking (no payment, slot already released), so listing it
+        // under "Past" is just clutter. The rows stay in the database.
         return bookingRepository.findByUser_UserIdOrderByStartTimestampDesc(user.getUserId())
                 .stream()
+                .filter(booking -> booking.getBookingStatus() != BookingStatus.EXPIRED)
                 .map(this::toSummaryResponse)
                 .toList();
     }
@@ -310,8 +314,14 @@ public class BookingService {
         }
         try {
             Long userId = Long.valueOf(authentication.getName());
-            return userRepository.findById(userId)
+            User found = userRepository.findById(userId)
                     .orElseThrow(() -> notFound("User not found"));
+            if (found.isDeleted()) {
+                // A token issued before the account was deleted is still
+                // cryptographically valid; this is what stops it working.
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account no longer exists");
+            }
+            return found;
         } catch (NumberFormatException ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authenticated user");
         }

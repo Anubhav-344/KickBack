@@ -55,15 +55,16 @@ export default function ReviewFormSheet({ bookingId, cafeName, trigger }: Review
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
+        aria-label="Your review (optional)"
         placeholder="Share your experience (optional)"
         rows={3}
-        className="w-full bg-bg-surface lg:bg-bg-raised border border-border-subtle rounded-card px-3.5 py-3 text-sm lg:text-base text-text-primary placeholder:text-text-secondary resize-none mb-4 lg:mb-5"
+        className="w-full bg-bg-surface lg:bg-bg-raised border border-border-strong rounded-card px-3.5 py-3 text-sm lg:text-base text-text-primary placeholder:text-text-secondary resize-none mb-4 lg:mb-5"
       />
 
       <button
         onClick={handleSubmit}
         disabled={createReview.isPending}
-        className="w-full bg-accent text-bg-base font-semibold text-sm lg:text-base py-3.5 lg:py-4 rounded-card shadow-accent-glow disabled:opacity-60"
+        className="w-full bg-accent text-on-accent font-semibold text-sm lg:text-base py-3.5 lg:py-4 rounded-card shadow-accent-glow disabled:opacity-60"
       >
         {createReview.isPending ? "Submitting..." : "Submit review"}
       </button>

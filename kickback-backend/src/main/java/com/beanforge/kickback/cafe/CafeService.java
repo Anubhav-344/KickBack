@@ -1,5 +1,20 @@
 package com.beanforge.kickback.cafe;
 
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.beanforge.kickback.cafe.dto.AmenityResponse;
 import com.beanforge.kickback.cafe.dto.CafeAddressResponse;
 import com.beanforge.kickback.cafe.dto.CafeDetailsResponse;
@@ -15,34 +30,25 @@ import com.beanforge.kickback.entity.OperatingDay;
 import com.beanforge.kickback.entity.Resource;
 import com.beanforge.kickback.entity.ResourceType;
 import com.beanforge.kickback.enums.DayOfWeekEnum;
+import com.beanforge.kickback.enums.ResourceStatus;
 import com.beanforge.kickback.repository.CafeRepository;
+import com.beanforge.kickback.resource.ResourceLiveStatusService;
 import com.beanforge.kickback.resource.dto.GameResponse;
 import com.beanforge.kickback.resource.dto.ResourceListResponse;
 import com.beanforge.kickback.resource.dto.ResourceResponse;
 import com.beanforge.kickback.resource.dto.ResourceTypeResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class CafeService {
 
     private final CafeRepository cafeRepository;
+    private final ResourceLiveStatusService resourceLiveStatusService;
 
-    public CafeService(CafeRepository cafeRepository) {
+    public CafeService(CafeRepository cafeRepository,
+                       ResourceLiveStatusService resourceLiveStatusService) {
         this.cafeRepository = cafeRepository;
+        this.resourceLiveStatusService = resourceLiveStatusService;
     }
 
     public List<CafeListingResponse> getCafes(String city) {
@@ -72,6 +78,12 @@ public class CafeService {
                 .filter(resource -> resource.getResourceType() != null)
                 .toList();
 
+        // One query for the whole café's units — tells us which ones are in
+        // use right now (based on real bookings) and when they next free up.
+        Map<Long, ResourceLiveStatusService.LiveStatus> liveStatus =
+                resourceLiveStatusService.computeLiveStatus(
+                        cafeResources.stream().map(Resource::getResourceId).toList());
+
         // No resourceTypeId → return all resources
         if (resourceTypeId == null) {
 
@@ -80,7 +92,7 @@ public class CafeService {
                             Resource::getResourceName,
                             String.CASE_INSENSITIVE_ORDER
                     ))
-                    .map(this::toResourceResponse)
+                    .map(resource -> toResourceResponse(resource, liveStatus))
                     .toList();
 
             return new ResourceListResponse(null, resources);
@@ -104,7 +116,7 @@ public class CafeService {
                         Resource::getResourceName,
                         String.CASE_INSENSITIVE_ORDER
                 ))
-                .map(this::toResourceResponse)
+                .map(resource -> toResourceResponse(resource, liveStatus))
                 .toList();
 
         ResourceTypeResponse typeResponse = new ResourceTypeResponse(
@@ -215,7 +227,9 @@ public class CafeService {
                 .toList();
     }
 
-    private ResourceResponse toResourceResponse(Resource resource) {
+    private ResourceResponse toResourceResponse(
+            Resource resource,
+            Map<Long, ResourceLiveStatusService.LiveStatus> liveStatus) {
         ResourceResponse response = new ResourceResponse();
         response.setResourceId(resource.getResourceId());
         response.setResourceTypeId(resource.getResourceType() != null
@@ -226,6 +240,7 @@ public class CafeService {
         response.setStatus(resource.getStatus());
         response.setHourlyRate(resource.getHourlyRate());
         response.setDescription(resource.getSpecifications());
+        response.setExtraNote(resource.getExtraNote());
         response.setGames(resource.getGames().stream()
                 .map(game -> new GameResponse(
                         game.getGameId(),
@@ -242,6 +257,16 @@ public class CafeService {
                 .map(image -> image.getImageUrl())
                 .findFirst()
                 .orElse(null));
+
+        // Layer real bookings on top of the stored status. Only an AVAILABLE
+        // unit can become "in use" — MAINTENANCE / OUT_OF_SERVICE (or a status
+        // someone set to BOOKED by hand) always win over the live check.
+        ResourceLiveStatusService.LiveStatus live = liveStatus.get(resource.getResourceId());
+        if (resource.getStatus() == ResourceStatus.AVAILABLE && live != null && live.inUseNow()) {
+            response.setStatus(ResourceStatus.BOOKED);
+            response.setNextAvailableAt(live.nextFreeAt().toString());
+        }
+
         return response;
     }
 

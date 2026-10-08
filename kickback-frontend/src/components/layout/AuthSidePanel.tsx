@@ -1,5 +1,5 @@
 // src/components/layout/AuthSidePanel.tsx
-import { Gamepad2 } from "lucide-react";
+import { LogoMark } from "@/components/ui/Logo";
 
 interface AuthSidePanelProps {
   className?: string;
@@ -26,9 +26,7 @@ export default function AuthSidePanel({ className = "" }: AuthSidePanelProps) {
       />
 
       <div className="relative flex flex-col items-center text-center px-12">
-        <div className="w-20 h-20 rounded-3xl bg-accent/15 border border-accent/30 flex items-center justify-center mb-8">
-          <Gamepad2 size={38} className="text-accent" />
-        </div>
+        <LogoMark className="w-24 h-24 mb-8" />
         <h2 className="font-display font-semibold text-4xl text-text-primary mb-3">
           KickBack
         </h2>

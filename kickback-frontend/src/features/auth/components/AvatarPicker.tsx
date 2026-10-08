@@ -35,7 +35,7 @@ export default function AvatarPicker({ profile }: AvatarPickerProps) {
           to fill the row just like the First/Last name fields below, so
           the grid's right edge lines up with the rest of the form instead
           of looking like a narrow, separate island. */}
-      <div className="grid grid-cols-4 gap-2.5 w-full">
+      <div role="group" aria-label="Choose an avatar" className="grid grid-cols-4 gap-2.5 w-full">
         {AVATAR_PRESETS.map((preset) => {
           const isSelected = currentAvatarId === preset.id;
           return (
@@ -45,6 +45,7 @@ export default function AvatarPicker({ profile }: AvatarPickerProps) {
               onClick={() => handleSelect(preset.id)}
               disabled={updateProfile.isPending}
               aria-label={`Select avatar ${preset.id}`}
+              aria-pressed={isSelected}
               className={`aspect-square rounded-full p-0.5 border-2 transition-colors disabled:opacity-50 ${
                 isSelected ? "border-accent" : "border-transparent"
               }`}

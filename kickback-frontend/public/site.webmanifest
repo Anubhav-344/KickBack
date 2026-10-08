@@ -1,0 +1,14 @@
+{
+  "name": "KickBack",
+  "short_name": "KickBack",
+  "description": "Find and book PS5, PC, VR and pool sessions at gaming cafés.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#12141A",
+  "theme_color": "#12141A",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

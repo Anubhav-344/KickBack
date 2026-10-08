@@ -5,13 +5,11 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
 import AuthSidePanel from "@/components/layout/AuthSidePanel";
+import { LogoMark } from "@/components/ui/Logo";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { loginSchema, type LoginFormValues } from "@/lib/validators";
 import { useLogin } from "../hooks/useAuth";
-
-// TODO(dev-only): remove this import once real auth/login is live
-import DevLoginPanel from "../components/DevLoginPanel"; // ← dev login for testing
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
@@ -26,17 +24,17 @@ export default function LoginPage() {
   const loginMutation = useLogin(redirectTo);
 
   return (
-    <PageShell>
+    <PageShell title="Log in">
       <div className="flex items-center gap-3 px-4 lg:px-10 py-3.5 lg:py-6">
         <button onClick={() => navigate(-1)} aria-label="Go back">
           <ArrowLeft size={18} className="text-text-secondary lg:w-6 lg:h-6" />
         </button>
-        <div className="flex items-center gap-2 lg:gap-3">
-          <div className="w-6 h-6 lg:w-9 lg:h-9 rounded-md bg-accent" />
+        <Link to="/" className="flex items-center gap-2 lg:gap-3">
+          <LogoMark className="w-6 h-6 lg:w-9 lg:h-9" />
           <span className="font-display font-bold text-lg lg:text-2xl text-text-primary">
             KickBack
           </span>
-        </div>
+        </Link>
       </div>
 
       <div className="flex-1 flex">
@@ -64,6 +62,15 @@ export default function LoginPage() {
             error={errors.password?.message}
           />
 
+          <div className="flex justify-end -mt-2 mb-3">
+            <Link
+              to="/forgot-password"
+              className="text-sm lg:text-base text-accent-text font-medium py-1"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <Button
             type="submit"
             isLoading={loginMutation.isPending}
@@ -78,14 +85,11 @@ export default function LoginPage() {
           Don&apos;t have an account?{" "}
           <Link
             to={redirectTo ? `/signup?redirect=${encodeURIComponent(redirectTo)}` : "/signup"}
-            className="text-accent-hover font-medium"
+            className="text-accent-text font-medium"
           >
             Sign up
           </Link>
         </p>
-
-        {/* TODO(dev-only): remove this block once real auth/login is live */}
-        {import.meta.env.DEV && <DevLoginPanel redirectTo={redirectTo} />}
       </div>
       </div>
       <AuthSidePanel className="hidden lg:flex lg:w-1/2" />

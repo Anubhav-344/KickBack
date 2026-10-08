@@ -20,7 +20,11 @@ export default function ResourceTypeFilterChips({
   const isAllActive = selectedTypes.length === 0;
 
   return (
-    <div className="flex gap-2 overflow-x-auto w-full min-w-0 px-4 lg:px-8 pb-4 [&::-webkit-scrollbar]:hidden">
+    <div
+      role="group"
+      aria-label="Filter cafés"
+      className="flex gap-2 overflow-x-auto w-full min-w-0 px-4 lg:px-8 pb-4 [&::-webkit-scrollbar]:hidden"
+    >
       <Chip label="All" active={isAllActive} onClick={onClearTypes} />
       {availableTypes.map((type) => (
         <Chip
@@ -50,10 +54,12 @@ function Chip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`flex-shrink-0 text-sm font-medium rounded-pill px-4 py-2 border transition-colors ${
         active
-          ? "bg-accent text-bg-base border-accent"
+          ? "bg-accent text-on-accent border-accent"
           : "bg-bg-surface text-text-primary border-border-subtle"
       }`}
     >

@@ -13,6 +13,7 @@ import { profileSchema, type ProfileFormValues } from "@/lib/validators";
 import { useUserProfile, useUpdateProfile } from "../hooks/useUpdateProfile";
 import { useAuthStore } from "../store/useAuthStore";
 import AvatarPicker from "../components/AvatarPicker";
+import { ProfileSkeleton } from "../components/AuthSkeletons";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <PageShell>
+    <PageShell title="Profile">
       <Header />
 
       <div className="flex-1 flex">
@@ -71,7 +72,7 @@ export default function ProfilePage() {
         </div>
 
         {isLoading ? (
-          <p className="text-sm text-text-secondary">Loading...</p>
+          <ProfileSkeleton />
         ) : (
           <>
             {profile && <AvatarPicker profile={profile} />}
@@ -116,7 +117,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={!isDirty || updateProfile.isPending}
-              className="w-full bg-accent text-bg-base font-semibold text-sm py-3.5 rounded-card shadow-accent-glow mt-2 disabled:opacity-50 transition-opacity"
+              className="w-full bg-accent text-on-accent font-semibold text-sm py-3.5 rounded-card shadow-accent-glow mt-2 disabled:opacity-50 transition-opacity"
             >
               {updateProfile.isPending ? "Saving..." : "Save changes"}
             </button>

@@ -17,6 +17,7 @@ import com.beanforge.kickback.booking.dto.BookingResponse;
 import com.beanforge.kickback.booking.dto.BookingSummaryResponse;
 import com.beanforge.kickback.booking.dto.CancelBookingResponse;
 import com.beanforge.kickback.booking.dto.CreateBookingRequest;
+import com.beanforge.kickback.booking.dto.UpdateBookingOfferRequest;
 
 import jakarta.validation.Valid;
 
@@ -49,6 +50,14 @@ public class BookingController {
             Authentication authentication,
             @PathVariable Long bookingId) {
         return ResponseEntity.ok(bookingService.getBooking(authentication, bookingId));
+    }
+
+    @PatchMapping("/{bookingId}/offer")
+    public ResponseEntity<BookingResponse> updateBookingOffer(
+            Authentication authentication,
+            @PathVariable Long bookingId,
+            @RequestBody UpdateBookingOfferRequest request) {
+        return ResponseEntity.ok(bookingService.updateBookingOffer(authentication, bookingId, request));
     }
 
     @PatchMapping("/{bookingId}/cancel")

@@ -4,9 +4,13 @@ import { ArrowLeft, Mail, Phone } from "lucide-react";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import AuthSidePanel from "@/components/layout/AuthSidePanel";
+import Button from "@/components/ui/Button";
+import { useAuthStore } from "../store/useAuthStore";
+import FaqList from "../components/FaqList";
+import { FAQS } from "../data/faqs";
 
 // STUB — these are placeholder contact details, carried over from the
-// original page. Real version: FAQ, a contact form, or a ticket link.
+// original page. Replace with the real support email and number.
 const SUPPORT_EMAIL = "hello@respawnlounge.in";
 const SUPPORT_PHONE_DISPLAY = "+91 98765 43210";
 const SUPPORT_PHONE_HREF = "+919876543210";
@@ -16,9 +20,10 @@ const SUPPORT_PHONE_HREF = "+919876543210";
 // and the old footer here claimed "Respawn Lounge, Bhopal" regardless.
 export default function SupportPage() {
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
-    <PageShell>
+    <PageShell title="Help &amp; Support">
       <Header />
 
       <div className="flex-1 flex">
@@ -33,10 +38,38 @@ export default function SupportPage() {
           </h1>
         </div>
 
-        <p className="text-sm lg:text-base text-text-secondary mb-6">
-          Having trouble with a booking or a payment? Get in touch:
-        </p>
+        <h2 className="font-display font-semibold text-lg text-text-primary mb-3">
+          Frequently asked questions
+        </h2>
+        <div className="mb-8">
+          <FaqList items={FAQS} />
+        </div>
 
+        <h2 className="font-display font-semibold text-lg text-text-primary mb-1.5">
+          Still need help?
+        </h2>
+        <p className="text-sm lg:text-base text-text-secondary mb-4">
+          Raise a ticket and we&apos;ll reply by email.
+        </p>
+        <div className="flex flex-col gap-2.5 mb-8">
+          <Button
+            type="button"
+            onClick={() =>
+              navigate(isAuthenticated ? "/support/tickets/new" : "/login?redirect=/support/tickets/new")
+            }
+          >
+            Raise a ticket
+          </Button>
+          {isAuthenticated && (
+            <Button type="button" variant="secondary" onClick={() => navigate("/support/tickets")}>
+              My tickets
+            </Button>
+          )}
+        </div>
+
+        <h2 className="font-display font-semibold text-lg text-text-primary mb-3">
+          Contact us
+        </h2>
         <div className="flex flex-col gap-3">
           <ContactRow
             href={`mailto:${SUPPORT_EMAIL}`}

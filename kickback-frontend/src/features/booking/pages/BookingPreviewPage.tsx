@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { BookingPreviewSkeleton } from "../components/BookingSkeletons";
 import HoldCountdown from "../components/HoldCountdown";
 import BookingSummaryCard from "../components/BookingSummaryCard";
 import PriceBreakdownCard from "../components/PriceBreakdownCard";
@@ -86,9 +87,7 @@ export default function BookingPreviewPage() {
     return (
       <PageShell>
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-text-secondary">Loading...</p>
-        </div>
+        <BookingPreviewSkeleton />
         <Footer />
       </PageShell>
     );
@@ -190,15 +189,16 @@ export default function BookingPreviewPage() {
         <input
           value={promoInput}
           onChange={(e) => setPromoInput(e.target.value)}
+          aria-label="Promo code"
           placeholder="Enter promo code"
-          className="flex-1 bg-bg-surface border border-border-subtle rounded-lg px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-secondary"
+          className="flex-1 bg-bg-surface border border-border-strong rounded-lg px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-secondary"
         />
         <button
           onClick={handleApplyCode}
           disabled={applyOffer.isPending}
           className="bg-bg-raised border border-border-subtle rounded-lg px-4 text-sm font-semibold text-text-primary disabled:opacity-60"
         >
-          {applyOffer.isPending ? "..." : "Apply"}
+          {applyOffer.isPending ? "Applying..." : "Apply"}
         </button>
       </div>
 
@@ -207,7 +207,7 @@ export default function BookingPreviewPage() {
           offers={cafe.offers}
           onSelect={applyOfferToBooking}
           trigger={
-            <button className="text-xs font-medium text-accent-hover">
+            <button className="text-xs font-medium text-accent-text">
               Select from available offers &#8250;
             </button>
           }
@@ -234,7 +234,7 @@ export default function BookingPreviewPage() {
       <button
         onClick={handlePay}
         disabled={initiatePayment.isPending}
-        className="w-full mt-5 lg:mt-7 bg-accent text-bg-base font-semibold text-[15px] lg:text-base py-3.5 lg:py-4 rounded-card shadow-accent-glow disabled:opacity-60"
+        className="w-full mt-5 lg:mt-7 bg-accent text-on-accent font-semibold text-[15px] lg:text-base py-3.5 lg:py-4 rounded-card shadow-accent-glow disabled:opacity-60"
       >
         {initiatePayment.isPending ? "Processing..." : `Pay \u20B9${booking.totalAmount}`}
       </button>
@@ -242,7 +242,7 @@ export default function BookingPreviewPage() {
   );
 
   return (
-    <PageShell>
+    <PageShell title="Checkout">
       <Header />
 
       {/* ============== MOBILE / TABLET (below lg): unchanged single column ============== */}
@@ -308,7 +308,7 @@ export default function BookingPreviewPage() {
           <button
             onClick={handlePay}
             disabled={initiatePayment.isPending}
-            className="w-full bg-accent text-bg-base font-semibold text-[15px] py-3.5 rounded-card shadow-accent-glow disabled:opacity-60"
+            className="w-full bg-accent text-on-accent font-semibold text-[15px] py-3.5 rounded-card shadow-accent-glow disabled:opacity-60"
           >
             {initiatePayment.isPending ? "Processing..." : `Pay \u20B9${booking.totalAmount}`}
           </button>

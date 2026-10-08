@@ -1,10 +1,13 @@
 // src/features/booking/components/StartTimeInput.tsx
+import { useId } from "react";
 import { minutesToParts, partsToMinutes } from "@/lib/dateTime";
 import { useBookingDraftStore } from "../store/useBookingDraftStore";
+import { AmPmToggle, TimeStepperBlock } from "./TimeControls";
 
 export default function StartTimeInput() {
   const startMinutes = useBookingDraftStore((s) => s.startMinutes);
   const setStartMinutes = useBookingDraftStore((s) => s.setStartMinutes);
+  const labelId = useId();
 
   const { hour12, minute, isPM } = minutesToParts(startMinutes);
 
@@ -25,72 +28,41 @@ export default function StartTimeInput() {
     setStartMinutes(partsToMinutes(hour12, next, isPM));
   };
 
+  const setHour = (n: number) => setStartMinutes(partsToMinutes(n, minute, isPM));
+  const setMinute = (n: number) => setStartMinutes(partsToMinutes(hour12, n, isPM));
+
   const setAmPm = (pm: boolean) => {
     setStartMinutes(partsToMinutes(hour12, minute, pm));
   };
 
   return (
-    <div className="mb-4">
-      <div className="text-xs text-text-secondary mb-1.5">Start time</div>
+    <div role="group" aria-labelledby={labelId} className="mb-4">
+      <div id={labelId} className="text-xs text-text-secondary mb-1.5">
+        Start time
+      </div>
       <div className="flex gap-2">
-        <TimeStepperBlock label="HOUR" value={String(hour12).padStart(2, "0")} onDecrement={() => adjustHour(-1)} onIncrement={() => adjustHour(1)} />
-        <TimeStepperBlock label="MIN" value={String(minute).padStart(2, "0")} onDecrement={() => adjustMinute(-1)} onIncrement={() => adjustMinute(1)} />
-
-        <div className="flex-none w-16 bg-bg-surface border border-border-subtle rounded-card p-2.5 flex flex-col gap-1">
-          <button
-            onClick={() => setAmPm(false)}
-            className={`text-center text-xs font-semibold py-1.5 rounded-md transition-colors ${
-              !isPM ? "bg-accent text-bg-base" : "text-text-secondary"
-            }`}
-          >
-            AM
-          </button>
-          <button
-            onClick={() => setAmPm(true)}
-            className={`text-center text-xs font-semibold py-1.5 rounded-md transition-colors ${
-              isPM ? "bg-accent text-bg-base" : "text-text-secondary"
-            }`}
-          >
-            PM
-          </button>
-        </div>
+        <TimeStepperBlock
+          label="HOUR"
+          spokenLabel="hour"
+          value={String(hour12).padStart(2, "0")}
+          onDecrement={() => adjustHour(-1)}
+          onIncrement={() => adjustHour(1)}
+          onSet={setHour}
+          min={1}
+          max={12}
+        />
+        <TimeStepperBlock
+          label="MIN"
+          spokenLabel="minute"
+          value={String(minute).padStart(2, "0")}
+          onDecrement={() => adjustMinute(-1)}
+          onIncrement={() => adjustMinute(1)}
+          onSet={setMinute}
+          min={0}
+          max={59}
+        />
+        <AmPmToggle isPM={isPM} onChange={setAmPm} />
       </div>
     </div>
-  );
-}
-
-function TimeStepperBlock({
-  label,
-  value,
-  onDecrement,
-  onIncrement,
-}: {
-  label: string;
-  value: string;
-  onDecrement: () => void;
-  onIncrement: () => void;
-}) {
-  return (
-    <div className="flex-1 bg-bg-surface border border-border-subtle rounded-card p-2.5">
-      <div className="text-[10px] text-text-secondary text-center mb-1">{label}</div>
-      <div className="flex items-center justify-between">
-        <StepperButton onClick={onDecrement} symbol={"\u2212"} />
-        <span className="font-semibold text-base text-text-primary tabular-nums">
-          {value}
-        </span>
-        <StepperButton onClick={onIncrement} symbol="+" />
-      </div>
-    </div>
-  );
-}
-
-function StepperButton({ onClick, symbol }: { onClick: () => void; symbol: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-[22px] h-[22px] rounded-md bg-bg-raised flex items-center justify-center text-xs font-semibold text-text-primary"
-    >
-      {symbol}
-    </button>
   );
 }

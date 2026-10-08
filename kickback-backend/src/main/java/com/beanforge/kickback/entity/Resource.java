@@ -49,6 +49,12 @@ public class Resource extends BaseEntity {
     @Column(name = "specifications", columnDefinition = "TEXT")
     private String specifications;
 
+    // Optional per-unit note shown on the booking page, e.g. "Extra
+    // controllers available at the cafe - Rs. 50 each". NULL = no note, so
+    // units that don't offer anything extra (a pool table, say) show nothing.
+    @Column(name = "extra_note", length = 255)
+    private String extraNote;
+
     @ManyToMany
     @JoinTable(
         name = "resource_games",

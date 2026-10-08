@@ -34,7 +34,7 @@ export default function OfferSelector({ offers, trigger, onSelect }: OfferSelect
                     </span>
                   </span>
                   {offer.promoCode && (
-                    <span className="text-xs font-medium text-accent-hover bg-accent/15 rounded-md px-2 py-1">
+                    <span className="text-xs font-medium text-accent-text bg-accent/15 rounded-md px-2 py-1">
                       {offer.promoCode}
                     </span>
                   )}

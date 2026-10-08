@@ -6,6 +6,7 @@ import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import BookingListCard from "../components/BookingListCard";
+import { BookingListSkeleton } from "../components/AuthSkeletons";
 import { useUserBookings } from "../hooks/useUserBookings";
 
 type Tab = "upcoming" | "past";
@@ -22,7 +23,7 @@ export default function MyBookingsPage() {
   );
 
   return (
-    <PageShell>
+    <PageShell title="My bookings">
       <Header />
 
       <div className="flex items-center gap-2.5 px-4 lg:px-8 pt-5 lg:pt-8">
@@ -36,7 +37,7 @@ export default function MyBookingsPage() {
 
       <div className="px-4 lg:px-8 pt-4 lg:pt-6">
 
-        <div className="flex gap-2 mb-4 max-w-xs">
+        <div role="group" aria-label="Show bookings" className="flex gap-2 mb-4 max-w-xs">
           <TabButton label="Upcoming" active={tab === "upcoming"} onClick={() => setTab("upcoming")} />
           <TabButton label="Past" active={tab === "past"} onClick={() => setTab("past")} />
         </div>
@@ -44,7 +45,7 @@ export default function MyBookingsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 px-4 lg:px-8 pb-6">
         {isLoading ? (
-          <p className="col-span-full text-sm text-text-secondary text-center py-10">Loading...</p>
+          <BookingListSkeleton />
         ) : filtered.length === 0 ? (
           <p className="col-span-full text-sm text-text-secondary text-center py-10">
             No {tab} bookings.
@@ -72,10 +73,12 @@ function TabButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`flex-1 text-sm font-medium py-2.5 rounded-card border transition-colors ${
         active
-          ? "bg-accent text-bg-base border-accent"
+          ? "bg-accent text-on-accent border-accent"
           : "bg-bg-surface text-text-secondary border-border-subtle"
       }`}
     >

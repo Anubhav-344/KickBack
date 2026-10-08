@@ -1,17 +1,5 @@
 package com.beanforge.kickback.resource;
 
-import com.beanforge.kickback.cafe.dto.OperatingWindowResponse;
-import com.beanforge.kickback.entity.*;
-import com.beanforge.kickback.enums.BookingStatus;
-import com.beanforge.kickback.enums.DayOfWeekEnum;
-import com.beanforge.kickback.repository.ResourceRepository;
-import com.beanforge.kickback.resource.dto.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,12 +7,36 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.beanforge.kickback.cafe.dto.OperatingWindowResponse;
+import com.beanforge.kickback.entity.Booking;
+import com.beanforge.kickback.entity.Cafe;
+import com.beanforge.kickback.entity.Game;
+import com.beanforge.kickback.entity.OperatingDay;
+import com.beanforge.kickback.entity.Resource;
+import com.beanforge.kickback.entity.ResourceImage;
+import com.beanforge.kickback.enums.BookingStatus;
+import com.beanforge.kickback.enums.DayOfWeekEnum;
+import com.beanforge.kickback.enums.ResourceStatus;
+import com.beanforge.kickback.repository.ResourceRepository;
+import com.beanforge.kickback.resource.dto.AvailabilityResponse;
+import com.beanforge.kickback.resource.dto.ExistingBookingResponse;
+import com.beanforge.kickback.resource.dto.GameResponse;
+import com.beanforge.kickback.resource.dto.ResourceResponse;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
+    private final ResourceLiveStatusService resourceLiveStatusService;
 
     public ResourceResponse getResource(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
@@ -91,6 +103,25 @@ public class ResourceService {
                 .findFirst()
                 .orElse(null);
 
+        // Same rule as the café's unit list (CafeService.getResources): real
+        // bookings are layered on top of the stored status, but only for a
+        // unit that's stored as AVAILABLE. MAINTENANCE / OUT_OF_SERVICE
+        // always win over the live check. Both endpoints go through
+        // ResourceLiveStatusService so they can never disagree.
+        ResourceStatus status = resource.getStatus();
+        String nextAvailableAt = null;
+
+        if (status == ResourceStatus.AVAILABLE) {
+            ResourceLiveStatusService.LiveStatus live = resourceLiveStatusService
+                    .computeLiveStatus(List.of(resource.getResourceId()))
+                    .get(resource.getResourceId());
+
+            if (live != null && live.inUseNow()) {
+                status = ResourceStatus.BOOKED;
+                nextAvailableAt = live.nextFreeAt().toString();
+            }
+        }
+
         return new ResourceResponse(
                 resource.getResourceId(),
                 resource.getResourceType() != null
@@ -99,12 +130,13 @@ public class ResourceService {
                 resource.getBrand(),
                 resource.getMaxPlayers() != null
                         ? resource.getMaxPlayers().intValue() : null,
-                resource.getStatus(),
+                status,
                 resource.getHourlyRate(),
                 resource.getSpecifications(),
                 games,
                 imageUrl,
-                calculateNextAvailableAt(resource));
+                nextAvailableAt,
+                resource.getExtraNote());
     }
 
     private GameResponse toGameResponse(Game game) {
@@ -115,23 +147,6 @@ public class ResourceService {
                 game.getMultiplayer(),
                 game.getMinPlayers(),
                 game.getMaxPlayers());
-    }
-
-    private String calculateNextAvailableAt(Resource resource) {
-        if (resource.getStatus() != null
-                && resource.getStatus().name().equals("AVAILABLE")) {
-            return null;
-        }
-
-        return resource.getBookings().stream()
-                .filter(Objects::nonNull)
-                .filter(this::isBlockingBooking)
-                .filter(booking -> booking.getEndTimestamp() != null
-                        && booking.getEndTimestamp().isAfter(LocalDateTime.now()))
-                .map(Booking::getEndTimestamp)
-                .min(LocalDateTime::compareTo)
-                .map(LocalDateTime::toString)
-                .orElse(null);
     }
 
     private boolean isBlockingBooking(Booking booking) {

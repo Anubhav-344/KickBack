@@ -34,7 +34,7 @@ export default function ResourceUnitCard({ unit }: ResourceUnitCardProps) {
 
   const infoTrigger = (
     <button
-      className="absolute top-2 right-2 w-[22px] h-[22px] rounded-md bg-black/45 backdrop-blur-sm flex items-center justify-center text-[11px] font-bold text-text-primary"
+      className="absolute top-2 right-2 w-[22px] h-[22px] rounded-md bg-black/45 backdrop-blur-sm flex items-center justify-center text-[11px] font-bold text-text-primary before:content-[''] before:absolute before:-inset-1.5"
       aria-label={`View details for ${unit.resourceName}`}
     >
       i

@@ -1,7 +1,7 @@
 // src/features/auth/components/ProfileMenu.tsx
 import * as Dialog from "@radix-ui/react-dialog";
 import { useNavigate } from "react-router-dom";
-import { User, CalendarCheck, HelpCircle, LogOut } from "lucide-react";
+import { User, CalendarCheck, Settings, HelpCircle, LogOut } from "lucide-react";
 import BottomSheet from "@/components/ui/BottomSheet";
 import ProfileMenuPopover from "./ProfileMenuPopover";
 import { useAuthStore } from "../store/useAuthStore";
@@ -23,6 +23,7 @@ export default function ProfileMenu() {
   const items: MenuItem[] = [
     { label: "Profile", icon: User, path: "/profile" },
     { label: "My Bookings", icon: CalendarCheck, path: "/bookings" },
+    { label: "Settings", icon: Settings, path: "/settings" },
     { label: "Help & Support", icon: HelpCircle, path: "/support" },
     {
       label: "Log out",

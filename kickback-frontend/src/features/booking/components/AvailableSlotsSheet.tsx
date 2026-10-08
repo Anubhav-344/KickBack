@@ -2,6 +2,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import type { ReactNode } from "react";
 import BottomSheet from "@/components/ui/BottomSheet";
+import CenteredModal from "@/components/ui/CenteredModal";
 import { formatMinutesAsTime } from "@/lib/dateTime";
 import { useBookingDraftStore } from "../store/useBookingDraftStore";
 
@@ -21,8 +22,9 @@ export default function AvailableSlotsSheet({
   const setStartMinutes = useBookingDraftStore((s) => s.setStartMinutes);
   const setEndMinutes = useBookingDraftStore((s) => s.setEndMinutes);
 
-  return (
-    <BottomSheet trigger={trigger} title="Available slots">
+  // Picking a window closes whichever of the two dialogs is showing.
+  const body = (
+    <>
       <div className="text-xs text-text-secondary -mt-2 mb-3.5">
         {unitName} &middot; {dateLabel}
       </div>
@@ -55,6 +57,24 @@ export default function AvailableSlotsSheet({
           </Dialog.Close>
         ))}
       </div>
-    </BottomSheet>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile/tablet: bottom sheet. "contents" keeps the trigger's own layout. */}
+      <div className="contents lg:hidden">
+        <BottomSheet trigger={trigger} title="Available slots">
+          {body}
+        </BottomSheet>
+      </div>
+
+      {/* Desktop: centered modal */}
+      <div className="hidden lg:contents">
+        <CenteredModal trigger={trigger} title="Available slots" size="md">
+          {body}
+        </CenteredModal>
+      </div>
+    </>
   );
 }

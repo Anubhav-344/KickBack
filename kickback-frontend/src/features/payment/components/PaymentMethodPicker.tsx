@@ -16,12 +16,14 @@ interface PaymentMethodPickerProps {
 
 export default function PaymentMethodPicker({ selected, onSelect }: PaymentMethodPickerProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 lg:gap-3">
+    <div role="group" aria-label="Payment method" className="grid grid-cols-2 gap-2 lg:gap-3">
       {OPTIONS.map(({ value, label, icon: Icon }) => {
         const isSelected = value === selected;
         return (
           <button
             key={value}
+            type="button"
+            aria-pressed={isSelected}
             onClick={() => onSelect(value)}
             className={`flex items-center gap-2 border rounded-lg px-3 lg:px-4 py-2.5 lg:py-3.5 text-sm lg:text-[15px] font-medium transition-colors ${
               isSelected
@@ -29,7 +31,7 @@ export default function PaymentMethodPicker({ selected, onSelect }: PaymentMetho
                 : "border-border-subtle bg-bg-surface text-text-primary"
             }`}
           >
-            <Icon size={15} className={isSelected ? "text-accent lg:w-[17px] lg:h-[17px]" : "text-text-secondary lg:w-[17px] lg:h-[17px]"} />
+            <Icon size={15} className={isSelected ? "text-accent-text lg:w-[17px] lg:h-[17px]" : "text-text-secondary lg:w-[17px] lg:h-[17px]"} />
             {label}
           </button>
         );

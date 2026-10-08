@@ -11,19 +11,31 @@ export default function DurationEndTimeFields() {
 
   return (
     <div className="flex gap-2.5">
-      <div className="flex-1 bg-bg-surface border border-border-subtle rounded-card p-3">
+      <div
+        role="group"
+        aria-label="Duration"
+        className="flex-1 bg-bg-surface border border-border-subtle rounded-card p-3"
+      >
         <div className="text-xs text-text-secondary mb-1.5">Duration</div>
         <div className="flex items-center justify-between">
           <button
+            type="button"
+            aria-label="Decrease duration by 15 minutes"
             onClick={() => adjustDuration(-15)}
             className="w-[26px] h-[26px] rounded-md bg-bg-raised flex items-center justify-center text-sm font-semibold text-text-primary"
           >
             &minus;
           </button>
-          <span className="font-display font-semibold text-[15px] text-text-primary tabular-nums">
+          <span
+            aria-live="polite"
+            aria-atomic="true"
+            className="font-display font-semibold text-[15px] text-text-primary tabular-nums"
+          >
             {formatDuration(durationMinutes)}
           </span>
           <button
+            type="button"
+            aria-label="Increase duration by 15 minutes"
             onClick={() => adjustDuration(15)}
             className="w-[26px] h-[26px] rounded-md bg-bg-raised flex items-center justify-center text-sm font-semibold text-text-primary"
           >
@@ -46,7 +58,7 @@ export default function DurationEndTimeFields() {
             <div className="font-display font-semibold text-[20px] text-text-primary tabular-nums">
               {formatMinutesAsTime(endMinutes)}
             </div>
-            <div className="text-[10px] text-accent-hover mt-0.5">Tap to edit</div>
+            <div className="text-[10px] text-accent-text mt-0.5">Tap to edit</div>
           </button>
         }
       />

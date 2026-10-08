@@ -13,7 +13,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const TONE_CLASSES: Record<BadgeTone, string> = {
   available: "bg-state-available/15 text-state-available",
   pending: "bg-state-pending/15 text-state-pending",
-  error: "bg-state-error/15 text-state-error",
+  error: "bg-state-error/15 text-state-error-text",
   neutral: "bg-bg-raised text-text-secondary",
   muted: "bg-state-booked/20 text-text-secondary",
 };

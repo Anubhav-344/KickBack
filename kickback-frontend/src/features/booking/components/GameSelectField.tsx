@@ -42,6 +42,8 @@ export default function GameSelectField({ games }: GameSelectFieldProps) {
             {games.map((g) => (
               <Dialog.Close asChild key={g.gameId}>
                 <button
+                  type="button"
+                  aria-current={gameId === g.gameId ? "true" : undefined}
                   onClick={() => setGame({ gameId: g.gameId, gameName: g.gameName })}
                   className={`text-left px-3.5 py-2.5 rounded-card border transition-colors ${
                     gameId === g.gameId

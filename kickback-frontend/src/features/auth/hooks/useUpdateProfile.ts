@@ -12,6 +12,8 @@ export interface UserProfile {
   username?: string;
   role: "USER" | "OWNER" | "ADMIN";
   avatarId?: number;
+  /** Colour theme saved on the account; null until the user picks one. */
+  theme?: "DARK" | "LIGHT" | null;
 }
 
 export interface UpdateProfileInput {

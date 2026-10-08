@@ -15,5 +15,6 @@ public class UserResponse {
     private String email;
     private String role;
     private Integer avatarId;
+    private String theme; // "DARK", "LIGHT", or null if never chosen
 
 }

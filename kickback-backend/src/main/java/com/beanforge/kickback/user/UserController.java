@@ -2,6 +2,9 @@ package com.beanforge.kickback.user;
 
 import com.beanforge.kickback.booking.BookingService;
 import com.beanforge.kickback.booking.dto.BookingSummaryResponse;
+import com.beanforge.kickback.user.dto.ChangePasswordRequest;
+import com.beanforge.kickback.user.dto.DeleteAccountRequest;
+import com.beanforge.kickback.user.dto.UpdatePreferencesRequest;
 import com.beanforge.kickback.user.dto.UpdateProfileRequest;
 import com.beanforge.kickback.user.dto.UserProfileResponse;
 import jakarta.validation.Valid;
@@ -34,6 +37,33 @@ public class UserController {
             Authentication authentication,
             @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userService.updateProfile(authentication, request));
+    }
+
+    // Settings > Appearance
+    @PatchMapping("/preferences")
+    public ResponseEntity<UserProfileResponse> updatePreferences(
+            Authentication authentication,
+            @Valid @RequestBody UpdatePreferencesRequest request) {
+        return ResponseEntity.ok(userService.updatePreferences(authentication, request));
+    }
+
+    // Settings > Account security
+    @PostMapping("/password")
+    public ResponseEntity<Void> changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(authentication, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Settings > Delete account (POST rather than DELETE: it carries the
+    // password in a body, which many proxies and clients drop from DELETE)
+    @PostMapping("/deletion")
+    public ResponseEntity<Void> deleteAccount(
+            Authentication authentication,
+            @Valid @RequestBody DeleteAccountRequest request) {
+        userService.deleteAccount(authentication, request);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/bookings")

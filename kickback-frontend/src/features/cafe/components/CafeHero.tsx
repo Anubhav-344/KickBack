@@ -43,16 +43,23 @@ export default function CafeHero({ images }: CafeHeroProps) {
       </button>
 
       {images.length > 1 && (
-        <div className="absolute bottom-2.5 right-4 flex gap-1.5">
+        <div className="absolute bottom-1 right-2.5 flex">
           {images.map((_, i) => (
+            // 24x24 button (WCAG 2.2 minimum target) with the small dot drawn inside it
             <button
               key={i}
+              type="button"
               onClick={() => setActive(i)}
               aria-label={`Go to image ${i + 1}`}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                i === active ? "bg-text-primary" : "bg-white/25"
-              }`}
-            />
+              aria-current={i === active ? "true" : undefined}
+              className="w-6 h-6 flex items-center justify-center"
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                  i === active ? "bg-text-primary" : "bg-text-primary/25"
+                }`}
+              />
+            </button>
           ))}
         </div>
       )}

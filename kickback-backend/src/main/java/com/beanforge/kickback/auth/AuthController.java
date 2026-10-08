@@ -1,6 +1,8 @@
 package com.beanforge.kickback.auth;
 
 import com.beanforge.kickback.auth.dto.AuthResponse;
+import com.beanforge.kickback.auth.dto.ForgotPasswordRequest;
+import com.beanforge.kickback.auth.dto.ResetPasswordRequest;
 import com.beanforge.kickback.auth.dto.LoginRequest;
 import com.beanforge.kickback.auth.dto.SignupRequest;
 import jakarta.validation.Valid;
@@ -14,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/signup")
@@ -33,5 +37,22 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request) {
 
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    /** Always 204, whether or not the account exists. */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+
+        passwordResetService.requestReset(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        passwordResetService.resetPassword(request);
+        return ResponseEntity.noContent().build();
     }
 }

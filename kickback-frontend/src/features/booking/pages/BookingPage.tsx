@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import PageShell from "@/components/layout/PageShell";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { BookingPageSkeleton } from "../components/BookingSkeletons";
 import ResourceHeader from "../components/ResourceHeader";
 import AvailabilityTimeline from "../components/AvailabilityTimeline";
 import GameSelectField from "../components/GameSelectField";
@@ -85,9 +86,7 @@ export default function BookingPage() {
     return (
       <PageShell>
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-text-secondary">Loading...</p>
-        </div>
+        <BookingPageSkeleton />
         <Footer />
       </PageShell>
     );
@@ -103,7 +102,7 @@ export default function BookingPage() {
           </p>
           <Link
             to={cafe ? `/cafes/${cafe.slug}` : "/"}
-            className="text-sm font-semibold text-accent-hover border border-accent/40 rounded-md px-4 py-2"
+            className="text-sm font-semibold text-accent-text border border-accent/40 rounded-md px-4 py-2"
           >
             {cafe ? "Back to Caf\u00E9" : "Back to Discovery"}
           </Link>
@@ -116,7 +115,7 @@ export default function BookingPage() {
   const selectedGame = unit.games?.find((g) => g.gameId === gameId);
 
   return (
-    <PageShell>
+    <PageShell title={`Book ${unit.resourceName} at ${cafe.name}`}>
       <Header />
 
       {/* ============== MOBILE / TABLET (below lg): unchanged single column ============== */}

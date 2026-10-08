@@ -47,9 +47,9 @@ export default function ResourceHeader({
           </div>
 
           <div className="mt-2 lg:mt-4">
-            <div className="font-display font-semibold text-2xl lg:text-4xl text-text-primary">
+            <h1 className="font-display font-semibold text-2xl lg:text-4xl text-text-primary">
               {unitName}
-            </div>
+            </h1>
             <div className="text-xs lg:text-base text-text-secondary mt-0.5 lg:mt-1.5 tabular-nums">
               &#8377;{hourlyRate}/hr
               {formatPlayerCount(minPlayers, maxPlayers)}
