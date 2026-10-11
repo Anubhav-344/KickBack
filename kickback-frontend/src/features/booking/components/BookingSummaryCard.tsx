@@ -5,6 +5,10 @@ interface BookingSummaryCardProps {
   cafeName: string;
   resourceName: string;
   game?: string | null;
+  extraControllers?: number;
+  extraControllersUndecided?: boolean;
+  /** Rupees per extra controller per hour, used to say what deciding at the café will cost. */
+  extraControllerRate?: number;
   dateLabel: string;
   startMinutes: number;
   endMinutes: number;
@@ -15,6 +19,9 @@ export default function BookingSummaryCard({
   cafeName,
   resourceName,
   game,
+  extraControllers = 0,
+  extraControllersUndecided = false,
+  extraControllerRate = 0,
   dateLabel,
   startMinutes,
   endMinutes,
@@ -24,6 +31,11 @@ export default function BookingSummaryCard({
     ["Caf\u00E9", cafeName],
     ["Resource", resourceName],
     ...(game ? ([["Game", game]] as [string, string][]) : []),
+    ...(extraControllersUndecided
+      ? ([["Extra controllers", extraControllerRate > 0 ? `Decide at the café (\u20B9${extraControllerRate}/hr each)` : "Decide at the café"]] as [string, string][])
+      : extraControllers > 0
+        ? ([["Extra controllers", String(extraControllers)]] as [string, string][])
+        : []),
     ["Date", dateLabel],
     ["Time", `${formatMinutesAsTime(startMinutes)} \u2013 ${formatMinutesAsTime(endMinutes)}`],
     ["Duration", formatDuration(durationMinutes)],

@@ -241,6 +241,7 @@ public class CafeService {
         response.setHourlyRate(resource.getHourlyRate());
         response.setDescription(resource.getSpecifications());
         response.setExtraNote(resource.getExtraNote());
+        response.setExtraControllerRate(resource.getExtraControllerRate());
         response.setGames(resource.getGames().stream()
                 .map(game -> new GameResponse(
                         game.getGameId(),

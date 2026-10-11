@@ -31,6 +31,7 @@ interface RawResource {
   // present when the unit is in use right now.
   nextAvailableAt?: string;
   extraNote?: string;
+  extraControllerRate?: number;
 }
 
 // GET /api/cafes/{slug}/resources returns a WRAPPED object, not a bare
@@ -98,6 +99,7 @@ function mapResource(raw: RawResource): ResourceUnit {
     imageUrl: raw.imageUrl,
     nextAvailableAt: formatNextFree(raw.nextAvailableAt),
     extraNote: raw.extraNote ?? undefined,
+    extraControllerRate: raw.extraControllerRate ?? undefined,
   };
 }
 

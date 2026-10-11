@@ -18,6 +18,12 @@ public class BookingResponse {
     private String cafeSlug;
     private String resourceName;
     private String game;
+    private int extraControllers;
+    private boolean extraControllersUndecided;
+    /** Part of subtotal that is extra controllers. */
+    private BigDecimal extraControllersAmount;
+    /** Per controller per hour, so the UI can say what "decide at the cafe" will cost. */
+    private BigDecimal extraControllerRate;
     private LocalDateTime startTimestamp;
     private LocalDateTime endTimestamp;
     private long durationMinutes;

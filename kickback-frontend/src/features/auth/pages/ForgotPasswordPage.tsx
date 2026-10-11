@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import { MailCheck } from "lucide-react";
+import { ArrowLeft, MailCheck } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { forgotPasswordSchema, type ForgotPasswordFormValues } from "@/lib/validators";
@@ -33,7 +33,11 @@ export default function ForgotPasswordPage() {
             reset the password. The link works for 30 minutes.
           </p>
         </div>
-        <Link to="/login" className="text-accent-text font-medium text-sm lg:text-base">
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-1.5 py-1 text-accent-text font-medium text-sm lg:text-base"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
           Back to log in
         </Link>
       </AuthPageLayout>

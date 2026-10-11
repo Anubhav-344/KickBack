@@ -1,6 +1,6 @@
 // src/features/booking/pages/BookingPreviewPage.tsx
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import PageShell from "@/components/layout/PageShell";
@@ -71,7 +71,8 @@ export default function BookingPreviewPage() {
   const { bookingId } = useParams();
   const numericBookingId = bookingId ? Number(bookingId) : undefined;
 
-  const { data: booking, isLoading: bookingLoading } = useBookingDetails(numericBookingId);
+  const { data: booking, isLoading: bookingLoading, isError: bookingError, refetch: refetchBooking } =
+    useBookingDetails(numericBookingId);
   // Only needed for the browsable offers list — the booking itself already
   // carries its own up-to-date pricing once an offer is applied.
   const { data: cafe } = useCafeDetails(booking?.cafeSlug);
@@ -82,6 +83,33 @@ export default function BookingPreviewPage() {
 
   const applyOffer = useApplyBookingOffer();
   const initiatePayment = useInitiatePayment();
+
+  // A failed fetch used to fall into the skeleton below and spin forever.
+  if (bookingError && !booking) {
+    return (
+      <PageShell>
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          <p className="text-sm text-text-secondary mb-5">
+            We couldn&apos;t load this booking. Please try again.
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => refetchBooking()}
+              className="text-sm font-semibold text-accent-text border border-accent/40 rounded-md px-4 py-2"
+            >
+              Try again
+            </button>
+            <Link to="/" className="text-sm text-text-secondary border border-border-subtle rounded-md px-4 py-2">
+              Back to home
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </PageShell>
+    );
+  }
 
   if (bookingLoading || !booking) {
     return (
@@ -96,6 +124,11 @@ export default function BookingPreviewPage() {
   const startMinutes = minutesFromISO(booking.startTimestamp);
   const endMinutes = minutesFromISO(booking.endTimestamp);
   const dateLabel = formatDateLabel(booking.startTimestamp.slice(0, 10));
+  const extraCount = booking.extraControllers ?? 0;
+  const extrasLabel =
+    extraCount > 0 && booking.extraControllerRate
+      ? `Extra controllers (${extraCount} \u00D7 \u20B9${booking.extraControllerRate}/hr)`
+      : "Extra controllers";
   const holdExpiresAtMs = booking.holdExpiresAt ? new Date(booking.holdExpiresAt).getTime() : null;
 
   const applyOfferToBooking = (offer: Offer | null) => {
@@ -220,6 +253,8 @@ export default function BookingPreviewPage() {
     <>
       <PriceBreakdownCard
         subtotal={booking.subtotal}
+        extrasAmount={booking.extraControllersAmount}
+        extrasLabel={extrasLabel}
         discount={booking.discountAmount}
         discountLabel={appliedPromoCode ?? undefined}
         tax={booking.taxAmount}
@@ -270,6 +305,9 @@ export default function BookingPreviewPage() {
             cafeName={booking.cafeName}
             resourceName={booking.resourceName}
             game={booking.game}
+            extraControllers={booking.extraControllers}
+            extraControllersUndecided={booking.extraControllersUndecided}
+            extraControllerRate={booking.extraControllerRate}
             dateLabel={dateLabel}
             startMinutes={startMinutes}
             endMinutes={endMinutes}
@@ -290,6 +328,8 @@ export default function BookingPreviewPage() {
           </div>
           <PriceBreakdownCard
             subtotal={booking.subtotal}
+            extrasAmount={booking.extraControllersAmount}
+            extrasLabel={extrasLabel}
             discount={booking.discountAmount}
             discountLabel={appliedPromoCode ?? undefined}
             tax={booking.taxAmount}

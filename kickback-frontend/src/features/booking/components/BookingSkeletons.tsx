@@ -15,7 +15,7 @@ export function BookingPageSkeleton() {
             <Skeleton className="h-8 lg:h-11 w-3/4 mt-3 lg:mt-5" />
             <Skeleton className="h-4 w-1/2 mt-2" />
           </div>
-          <Skeleton className="w-[84px] h-[84px] lg:w-[220px] lg:h-[220px] rounded-2xl flex-shrink-0" />
+          <Skeleton className="w-[84px] h-[84px] lg:w-[140px] lg:h-[140px] rounded-2xl flex-shrink-0" />
         </div>
 
         <Skeleton className="h-24 w-full mt-6 rounded-card" />

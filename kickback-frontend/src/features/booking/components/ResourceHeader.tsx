@@ -9,7 +9,7 @@ interface ResourceHeaderProps {
   maxPlayers?: number;
   minPlayers?: number;
   imageUrl?: string;
-  // Per-unit note from the database. Nothing renders when the unit has none.
+  // Free-text note from the database (for anything that is not controller pricing). Nothing renders when the unit has none.
   extraNote?: string;
 }
 
@@ -62,10 +62,9 @@ export default function ResourceHeader({
           </div>
         </div>
 
-        {/* Significantly bigger on desktop (w-[84px] -> lg:w-[220px]) — this
-            was barely visible before, especially with how much room the
-            two-column desktop layout actually has available. */}
-        <div className="w-[84px] lg:w-[220px] h-auto lg:h-[220px] rounded-2xl flex-shrink-0 bg-gradient-to-br from-bg-raised to-bg-surface border border-border-subtle overflow-hidden">
+        {/* Desktop image stays close to the height of the text beside it, otherwise
+            the row grows tall and leaves a big empty gap above the timeline. */}
+        <div className="w-[84px] lg:w-[140px] h-auto lg:h-[140px] rounded-2xl flex-shrink-0 bg-gradient-to-br from-bg-raised to-bg-surface border border-border-subtle overflow-hidden">
           {imageUrl && (
             <img src={imageUrl} alt={unitName} className="w-full h-full object-cover" />
           )}

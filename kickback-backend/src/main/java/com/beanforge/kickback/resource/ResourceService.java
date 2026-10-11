@@ -136,7 +136,8 @@ public class ResourceService {
                 games,
                 imageUrl,
                 nextAvailableAt,
-                resource.getExtraNote());
+                resource.getExtraNote(),
+                resource.getExtraControllerRate());
     }
 
     private GameResponse toGameResponse(Game game) {

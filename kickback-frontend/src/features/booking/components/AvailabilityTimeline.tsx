@@ -5,13 +5,21 @@ import type { ExistingBooking, OperatingWindow } from "../types";
 import { computeTimelineSegments, computeAvailableGaps } from "../utils/timelineSegments";
 import { useBookingDraftStore, useBookingEndMinutes } from "../store/useBookingDraftStore";
 import { formatDateLabel, formatMinutesAsTime, todayISO } from "@/lib/dateTime";
+import { useNowMinutes } from "../hooks/useNowMinutes";
 import AvailableSlotsSheet from "./AvailableSlotsSheet";
 
 const SEGMENT_COLOR: Record<string, string> = {
   booked: "bg-state-booked",
   available: "bg-state-available/50 animate-pulse-available",
   selected: "bg-accent shadow-accent-glow",
+  past: "bg-bg-raised",
 };
+
+// Time that has already gone: a dim, striped fill, so it reads as "not
+// available" without being mistaken for a booked slot (solid grey) and
+// without relying on colour alone.
+const PAST_STRIPES =
+  "repeating-linear-gradient(135deg, var(--color-bg-raised) 0 4px, var(--color-border-subtle) 4px 5px)";
 
 interface AvailabilityTimelineProps {
   unitName: string;
@@ -46,6 +54,13 @@ export default function AvailabilityTimeline({
   };
 
   const dateLabel = formatDateLabel(selectedDate);
+  const { openingMinutes, closingMinutes } = operatingWindow;
+
+  // On today's date, every minute before the current one is gone; on any
+  // other date nothing is. The current minute itself can still be booked.
+  const nowMin = useNowMinutes();
+  const isToday = selectedDate === todayISO();
+  const passedUntil = isToday ? nowMin : 0;
 
   // The bar below is purely visual, so give assistive tech the same
   // information in words: what's booked, and where the user's own slot sits.
@@ -55,17 +70,18 @@ export default function AvailabilityTimeline({
       : bookings
           .map((b) => `${formatMinutesAsTime(b.startMinutes)} to ${formatMinutesAsTime(b.endMinutes)}`)
           .join(", ");
-  const timelineLabel = `Availability on ${dateLabel}. Booked: ${bookedSummary}. Your slot: ${formatMinutesAsTime(startMinutes)} to ${formatMinutesAsTime(endMinutes)}. Opens the list of available times.`;
+  const timelineLabel = `Availability on ${dateLabel}. Booked: ${bookedSummary}. Your slot: ${formatMinutesAsTime(startMinutes)} to ${formatMinutesAsTime(endMinutes)}.${
+    passedUntil > operatingWindow.openingMinutes ? ` Times before ${formatMinutesAsTime(passedUntil)} have already passed.` : ""
+  } Opens the list of available times.`;
 
-  const { openingMinutes, closingMinutes } = operatingWindow;
   const totalSpan = closingMinutes - openingMinutes;
 
   const segments = operatingWindow.isClosedToday
     ? []
-    : computeTimelineSegments(openingMinutes, closingMinutes, bookings, startMinutes, endMinutes);
+    : computeTimelineSegments(openingMinutes, closingMinutes, bookings, startMinutes, endMinutes, passedUntil);
   const gaps = operatingWindow.isClosedToday
     ? []
-    : computeAvailableGaps(openingMinutes, closingMinutes, bookings);
+    : computeAvailableGaps(openingMinutes, closingMinutes, bookings, passedUntil);
 
   const tickCount = operatingWindow.isClosedToday ? 0 : Math.floor(totalSpan / 120) + 1;
   const ticks = Array.from({ length: tickCount }, (_, i) => openingMinutes + i * 120);
@@ -125,7 +141,10 @@ export default function AvailabilityTimeline({
                     <span
                       key={i}
                       className={`block ${SEGMENT_COLOR[seg.type]}`}
-                      style={{ flex: seg.endMinutes - seg.startMinutes }}
+                      style={{
+                        flex: seg.endMinutes - seg.startMinutes,
+                        ...(seg.type === "past" ? { backgroundImage: PAST_STRIPES } : null),
+                      }}
                     />
                   ))}
                 </button>
@@ -139,6 +158,9 @@ export default function AvailabilityTimeline({
             </div>
 
             <div className="flex gap-3.5 mt-3">
+              {passedUntil > openingMinutes && (
+                <Legend color="bg-bg-raised border border-border-strong" label="Passed" />
+              )}
               <Legend color="bg-state-booked" label="Booked" />
               <Legend color="bg-state-available/50" label="Available" />
               <Legend color="bg-accent" label="Your slot" />

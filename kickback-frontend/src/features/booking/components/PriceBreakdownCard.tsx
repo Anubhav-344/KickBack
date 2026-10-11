@@ -2,6 +2,9 @@
 
 interface PriceBreakdownCardProps {
   subtotal: number;
+  /** Part of the subtotal that is extra controllers (shown as its own line when above 0). */
+  extrasAmount?: number;
+  extrasLabel?: string;
   discount: number;
   discountLabel?: string;
   tax: number;
@@ -10,6 +13,8 @@ interface PriceBreakdownCardProps {
 
 export default function PriceBreakdownCard({
   subtotal,
+  extrasAmount = 0,
+  extrasLabel,
   discount,
   discountLabel,
   tax,
@@ -17,7 +22,14 @@ export default function PriceBreakdownCard({
 }: PriceBreakdownCardProps) {
   return (
     <div className="bg-bg-surface border border-border-subtle rounded-card p-3.5 lg:p-5">
-      <Row label="Subtotal" value={`\u20B9${subtotal}`} />
+      {extrasAmount > 0 ? (
+        <>
+          <Row label="Booking" value={`\u20B9${subtotal - extrasAmount}`} />
+          <Row label={extrasLabel ?? "Extra controllers"} value={`\u20B9${extrasAmount}`} />
+        </>
+      ) : (
+        <Row label="Subtotal" value={`\u20B9${subtotal}`} />
+      )}
       {discount > 0 && (
         <Row
           label={discountLabel ? `Discount (${discountLabel})` : "Discount"}

@@ -1,13 +1,12 @@
 package com.beanforge.kickback.resource.dto;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import com.beanforge.kickback.enums.ResourceStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,5 +25,6 @@ public class ResourceResponse {
     private String imageUrl;
     private String nextAvailableAt;
     private String extraNote;
+    private BigDecimal extraControllerRate;
 
 }

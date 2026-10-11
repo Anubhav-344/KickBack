@@ -2,6 +2,7 @@ package com.beanforge.kickback.entity;
 
 import com.beanforge.kickback.enums.BookingStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,6 +53,21 @@ public class Booking extends BaseEntity {
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
+
+    /** Controllers wanted beyond the one included with the booking. */
+    @ColumnDefault("0")
+    @Column(name = "extra_controllers", nullable = false)
+    private Integer extraControllers = 0;
+
+    /** Money for the extra controllers (rate x count x hours). Already included in subtotal. */
+    @ColumnDefault("0")
+    @Column(name = "extra_controllers_amount", precision = 10, scale = 2, nullable = false)
+    private BigDecimal extraControllersAmount = BigDecimal.ZERO;
+
+    /** The customer chose "not sure, decide at the cafe". */
+    @ColumnDefault("false")
+    @Column(name = "extra_controllers_undecided", nullable = false)
+    private Boolean extraControllersUndecided = false;
 
     @Column(name = "subtotal", precision = 10, scale = 2)
     private BigDecimal subtotal;

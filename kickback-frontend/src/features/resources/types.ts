@@ -25,5 +25,6 @@ export interface ResourceUnit {
   games?: GameOption[]; // resolved from RESOURCE_GAMES join
   imageUrl?: string;
   nextAvailableAt?: string; // display-formatted time, only set when the unit is in use right now
+  extraControllerRate?: number; // price of ONE extra controller per hour; 0 or absent = free
   extraNote?: string; // optional per-unit note (e.g. extra controllers) — absent for units without one
 }

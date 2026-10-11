@@ -10,6 +10,10 @@ export interface CreateBookingPayload {
   offerId?: number;
   promoCode?: string;
   notes?: string;
+  /** Controllers beyond the one included. Omit or 0 for none. */
+  extraControllers?: number;
+  /** True when the customer will decide at the café. */
+  extraControllersUndecided?: boolean;
 }
 
 // Matches BookingResponse exactly — used for both the create-booking result
@@ -20,6 +24,12 @@ export interface BookingResponse {
   cafeSlug: string;
   resourceName: string;
   game?: string | null;
+  extraControllers?: number;
+  extraControllersUndecided?: boolean;
+  /** Rupees of the subtotal that are extra controllers. */
+  extraControllersAmount?: number;
+  /** Rupees per extra controller per hour. */
+  extraControllerRate?: number;
   startTimestamp: string;
   endTimestamp: string;
   durationMinutes: number;

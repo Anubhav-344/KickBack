@@ -57,7 +57,7 @@ export default function LoginPage() {
           <Input
             label="Password"
             type="password"
-            placeholder="\u2022\u2022\u2022\u2022\u2022\u2022"
+            placeholder={"\u2022\u2022\u2022\u2022\u2022\u2022"}
             {...register("password")}
             error={errors.password?.message}
           />

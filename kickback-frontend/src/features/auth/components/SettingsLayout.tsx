@@ -15,7 +15,8 @@ interface SettingsLayoutProps {
   children: ReactNode;
 }
 
-// Shared frame for every Settings page: the same compact form column with the
+// Shared frame for every Settings page: the form column on the left, using the
+// whole half of the screen (rows and fields stretch to its edges), with the
 // decorative panel on the right that Profile, Login and Signup use.
 export default function SettingsLayout({ title, backTo, backLabel, children }: SettingsLayoutProps) {
   return (
@@ -24,7 +25,7 @@ export default function SettingsLayout({ title, backTo, backLabel, children }: S
 
       <div className="flex-1 flex">
         <div className="flex-1 lg:w-1/2 px-4 lg:px-16 py-6 lg:py-8 w-full">
-          <div className="max-w-md mx-auto w-full">
+          <div className="w-full">
             <div className="flex items-center gap-2.5 mb-6">
               <Link
                 to={backTo}

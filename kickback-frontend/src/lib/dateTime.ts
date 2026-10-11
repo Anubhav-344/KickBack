@@ -85,3 +85,22 @@ export function snapDurationToStep(minutes: number, stepMinutes = 15): number {
   const snapped = Math.round(minutes / stepMinutes) * stepMinutes;
   return Math.max(stepMinutes, snapped);
 }
+
+/** Minutes since midnight for the given moment (default: now), in the user's local time. */
+export function nowMinutes(date: Date = new Date()): number {
+  return date.getHours() * 60 + date.getMinutes();
+}
+
+/** Rounds up to the next multiple of the step (30 -> 30, 31 -> 35 for a 5-minute step). */
+export function ceilToStep(minutes: number, stepMinutes = 5): number {
+  return Math.ceil(minutes / stepMinutes) * stepMinutes;
+}
+
+/**
+ * Where "Start time" should begin when the booking page opens for today:
+ * the current time rounded up to the next 5 minutes (so the slot is still in
+ * the future by the time someone taps Book), but never before the café opens.
+ */
+export function defaultStartMinutes(now: number, openingMinutes: number): number {
+  return Math.min(Math.max(ceilToStep(now), openingMinutes), 1439);
+}

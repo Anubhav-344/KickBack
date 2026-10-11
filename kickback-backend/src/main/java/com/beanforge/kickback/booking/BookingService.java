@@ -16,6 +16,7 @@ import com.beanforge.kickback.enums.BookingStatus;
 import com.beanforge.kickback.enums.DayOfWeekEnum;
 import com.beanforge.kickback.enums.DiscountType;
 import com.beanforge.kickback.enums.OfferType;
+import com.beanforge.kickback.enums.ResourceStatus;
 import com.beanforge.kickback.repository.BookingRepository;
 import com.beanforge.kickback.repository.GameRepository;
 import com.beanforge.kickback.repository.OfferRepository;
@@ -35,6 +36,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
@@ -71,7 +73,10 @@ public class BookingService {
         User user = getAuthenticatedUser(authentication);
         LocalDateTime now = LocalDateTime.now();
 
-        if (request.getStartTimestamp().isBefore(now)) {
+        // The time picker works in whole minutes, so a start time inside the
+        // current minute ("now") is allowed; only earlier minutes are the past.
+        // (Comparing to the exact second would refuse "start at 1:05" at 1:05:30.)
+        if (request.getStartTimestamp().isBefore(now.truncatedTo(ChronoUnit.MINUTES))) {
             throw badRequest("Booking start time must be in the future");
         }
         if (!request.getStartTimestamp().isBefore(request.getEndTimestamp())) {
@@ -101,6 +106,8 @@ public class BookingService {
         }
 
         Game game = resolveGame(resource, request.getGameId());
+        int extraControllers = resolveExtraControllers(request, resource, game);
+        boolean extraControllersUndecided = Boolean.TRUE.equals(request.getExtraControllersUndecided());
         Offer offer = resolveOffer(cafe, request.getOfferId(), request.getPromoCode());
         validateOfferEligibility(offer, request.getDate(), request.getStartTimestamp().toLocalTime(),
                 requestedDurationMinutes);
@@ -133,9 +140,14 @@ public class BookingService {
 
         // Bonus time is free; discount offers affect the requested booking price.
         BigDecimal hourlyRate = resource.getHourlyRate();
-        BigDecimal subtotal = hourlyRate
+        BigDecimal baseAmount = hourlyRate
                 .multiply(BigDecimal.valueOf(requestedDurationMinutes))
                 .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+        // Extra controllers are charged per controller per hour of the requested time (bonus
+        // minutes from an extra-time offer are not billed). They sit inside the subtotal, so
+        // percentage and fixed discounts and tax apply to them like the rest of the booking.
+        BigDecimal extraControllersAmount = extraControllersCharge(resource, extraControllers, requestedDurationMinutes);
+        BigDecimal subtotal = baseAmount.add(extraControllersAmount);
 
         BigDecimal discountAmount = calculateDiscount(offer, subtotal);
         BigDecimal taxableAmount = subtotal.subtract(discountAmount).max(BigDecimal.ZERO);
@@ -154,6 +166,9 @@ public class BookingService {
         booking.setBookingStatus(BookingStatus.PENDING);
         booking.setHoldExpiresAt(now.plusMinutes(holdMinutes));
         booking.setNotes(request.getNotes());
+        booking.setExtraControllers(extraControllers);
+        booking.setExtraControllersUndecided(extraControllersUndecided);
+        booking.setExtraControllersAmount(extraControllersAmount);
         booking.setSubtotal(subtotal);
         booking.setDiscountAmount(discountAmount);
         booking.setTaxAmount(taxAmount);
@@ -328,12 +343,70 @@ public class BookingService {
     }
 
     private void validateResource(Resource resource) {
-        if (resource.getStatus() != null && resource.getStatus().name().equalsIgnoreCase("INACTIVE")) {
+        // AVAILABLE and BOOKED are both fine: BOOKED only means "in use right
+        // now", and this booking is for a future slot (the overlap check
+        // decides whether that slot is free). Out-of-order units are not.
+        if (resource.getStatus() == ResourceStatus.MAINTENANCE
+                || resource.getStatus() == ResourceStatus.OUT_OF_SERVICE) {
             throw badRequest("The selected resource is not available for booking");
         }
         if (resource.getHourlyRate() == null || resource.getHourlyRate().compareTo(BigDecimal.ZERO) < 0) {
             throw badRequest("Resource hourly rate is invalid");
         }
+    }
+
+    /**
+     * One controller is included with every booking, so the extra count can be at most
+     * (players the game supports on this unit) - 1. Without a game we cannot know the
+     * limit, so extras need one.
+     */
+    private int resolveExtraControllers(CreateBookingRequest request, Resource resource, Game game) {
+        int extra = request.getExtraControllers() == null ? 0 : request.getExtraControllers();
+        boolean undecided = Boolean.TRUE.equals(request.getExtraControllersUndecided());
+        if (extra < 0) {
+            throw badRequest("Extra controllers cannot be negative");
+        }
+        if (undecided && extra > 0) {
+            throw badRequest("Choose a number of extra controllers or decide at the cafe, not both");
+        }
+        // A unit only offers extra controllers when the owner has set a rate for it (0 = free).
+        // No rate at all means the unit has none (a pool table, a VR headset, ...).
+        if ((extra > 0 || undecided) && resource.getExtraControllerRate() == null) {
+            throw badRequest("This unit does not offer extra controllers");
+        }
+        if (extra == 0) return 0;
+        if (game == null) {
+            throw badRequest("Select a game before adding extra controllers");
+        }
+        int maxPlayers = effectiveMaxPlayers(resource, game);
+        if (extra > maxPlayers - 1) {
+            throw badRequest(maxPlayers <= 1
+                    ? "This game is single player, so no extra controllers are needed"
+                    : "This game supports up to " + maxPlayers + " players here, so at most "
+                            + (maxPlayers - 1) + " extra controllers");
+        }
+        return extra;
+    }
+
+    private BigDecimal extraControllersCharge(Resource resource, int extraControllers, long durationMinutes) {
+        BigDecimal rate = resource.getExtraControllerRate();
+        if (extraControllers <= 0 || rate == null || rate.signum() <= 0) {
+            return BigDecimal.ZERO.setScale(2);
+        }
+        return rate
+                .multiply(BigDecimal.valueOf(extraControllers))
+                .multiply(BigDecimal.valueOf(durationMinutes))
+                .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+    }
+
+    /** Players the game allows, capped by what the unit itself can seat. Unknown limits count as 1. */
+    private int effectiveMaxPlayers(Resource resource, Game game) {
+        Integer gameMax = game.getMaxPlayers();
+        Integer unitMax = resource.getMaxPlayers() == null ? null : resource.getMaxPlayers().intValue();
+        if (gameMax != null && unitMax != null) return Math.max(1, Math.min(gameMax, unitMax));
+        if (gameMax != null) return Math.max(1, gameMax);
+        if (unitMax != null) return Math.max(1, unitMax);
+        return 1;
     }
 
     private Game resolveGame(Resource resource, Long gameId) {
@@ -460,6 +533,12 @@ public class BookingService {
         response.setCafeSlug(booking.getCafe().getSlug());
         response.setResourceName(booking.getResource().getResourceName());
         response.setGame(booking.getGame() != null ? booking.getGame().getGameName() : null);
+        response.setExtraControllers(booking.getExtraControllers() == null ? 0 : booking.getExtraControllers());
+        response.setExtraControllersUndecided(Boolean.TRUE.equals(booking.getExtraControllersUndecided()));
+        response.setExtraControllersAmount(booking.getExtraControllersAmount() == null
+                ? BigDecimal.ZERO : booking.getExtraControllersAmount());
+        response.setExtraControllerRate(booking.getResource().getExtraControllerRate() == null
+                ? BigDecimal.ZERO : booking.getResource().getExtraControllerRate());
         response.setStartTimestamp(booking.getStartTimestamp());
         response.setEndTimestamp(booking.getEndTimestamp());
         response.setDurationMinutes(Duration.between(booking.getStartTimestamp(), booking.getEndTimestamp()).toMinutes());

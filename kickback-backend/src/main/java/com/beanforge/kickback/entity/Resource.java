@@ -55,6 +55,11 @@ public class Resource extends BaseEntity {
     @Column(name = "extra_note", length = 255)
     private String extraNote;
 
+    // Price of ONE extra controller per hour of the booking. NULL or 0 = extra
+    // controllers are free on this unit. The first controller is always included.
+    @Column(name = "extra_controller_rate", precision = 10, scale = 2)
+    private BigDecimal extraControllerRate;
+
     @ManyToMany
     @JoinTable(
         name = "resource_games",

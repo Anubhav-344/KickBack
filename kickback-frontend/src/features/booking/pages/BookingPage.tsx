@@ -9,6 +9,7 @@ import { BookingPageSkeleton } from "../components/BookingSkeletons";
 import ResourceHeader from "../components/ResourceHeader";
 import AvailabilityTimeline from "../components/AvailabilityTimeline";
 import GameSelectField from "../components/GameSelectField";
+import ExtraControllersField from "../components/ExtraControllersField";
 import StartTimeInput from "../components/StartTimeInput";
 import DurationEndTimeFields from "../components/DurationEndTimeFields";
 import PriceSummary from "../components/PriceSummary";
@@ -18,7 +19,7 @@ import { useCafeDetails } from "@/features/cafe/hooks/useCafeDetails";
 import { useResourceUnit } from "@/features/resources/hooks/useResources";
 import { useAvailability } from "../hooks/useAvailability";
 import { useCreateBooking } from "../hooks/useCreateBooking";
-import { toISODateTime } from "@/lib/dateTime";
+import { defaultStartMinutes, nowMinutes, todayISO, toISODateTime } from "@/lib/dateTime";
 
 export default function BookingPage() {
   const { cafeSlug, resourceId } = useParams();
@@ -31,8 +32,11 @@ export default function BookingPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const gameId = useBookingDraftStore((s) => s.gameId);
+  const extraControllers = useBookingDraftStore((s) => s.extraControllers);
   const selectedDate = useBookingDraftStore((s) => s.selectedDate);
   const startMinutes = useBookingDraftStore((s) => s.startMinutes);
+  const startInitialised = useBookingDraftStore((s) => s.startInitialised);
+  const setStartMinutes = useBookingDraftStore((s) => s.setStartMinutes);
   const endMinutes = useBookingEndMinutes();
 
   const numericResourceId = resourceId ? Number(resourceId) : undefined;
@@ -54,12 +58,30 @@ export default function BookingPage() {
     }
   }, [numericResourceId, currentDraftResourceId, cafeSlug, reset, setResource]);
 
+  // First visit to this unit: start the time picker at "now" (rounded up a
+  // little) instead of a fixed 2 PM. Waits for the café's opening hours so it
+  // never lands before opening. A returning visitor keeps their own choice.
+  useEffect(() => {
+    if (startInitialised || !availability) return;
+    if (selectedDate !== todayISO()) return;
+    setStartMinutes(
+      defaultStartMinutes(nowMinutes(), availability.operatingWindow.openingMinutes),
+    );
+  }, [startInitialised, availability, selectedDate, setStartMinutes]);
+
   const handleBook = () => {
     if (!isAuthenticated) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
     if (!numericResourceId) return;
+
+    // The server refuses a start time in a past minute; say so plainly here.
+    // (Starting in the current minute is fine.)
+    if (selectedDate === todayISO() && startMinutes < nowMinutes()) {
+      toast.error("That start time has already passed. Pick a later time.", { id: "booking-error" });
+      return;
+    }
 
     createBooking.mutate(
       {
@@ -68,6 +90,8 @@ export default function BookingPage() {
         date: selectedDate,
         startTimestamp: toISODateTime(selectedDate, startMinutes),
         endTimestamp: toISODateTime(selectedDate, endMinutes),
+        extraControllers: typeof extraControllers === "number" ? extraControllers : 0,
+        extraControllersUndecided: extraControllers === "UNSURE",
       },
       {
         onSuccess: (booking) => {
@@ -113,6 +137,9 @@ export default function BookingPage() {
   }
 
   const selectedGame = unit.games?.find((g) => g.gameId === gameId);
+  // Only units the owner has priced extra controllers for (0 = free) show the field;
+  // pool tables, VR headsets and the like have none.
+  const offersControllers = unit.extraControllerRate !== undefined && unit.extraControllerRate !== null;
 
   return (
     <PageShell title={`Book ${unit.resourceName} at ${cafe.name}`}>
@@ -138,12 +165,16 @@ export default function BookingPage() {
 
         <div className="px-4 py-4">
           <GameSelectField games={unit.games ?? []} />
+          {offersControllers && (
+            <ExtraControllersField hasGames={(unit.games ?? []).length > 0} unitMaxPlayers={unit.maxPlayers} extraControllerRate={unit.extraControllerRate} />
+          )}
           <StartTimeInput />
           <DurationEndTimeFields />
         </div>
 
         <PriceSummary
           hourlyRate={unit.hourlyRate}
+          extraControllerRate={unit.extraControllerRate}
           onBook={handleBook}
         />
       </div>
@@ -172,6 +203,9 @@ export default function BookingPage() {
 
           <div className="py-4">
             <GameSelectField games={unit.games ?? []} />
+            {offersControllers && (
+            <ExtraControllersField hasGames={(unit.games ?? []).length > 0} unitMaxPlayers={unit.maxPlayers} extraControllerRate={unit.extraControllerRate} />
+          )}
             <StartTimeInput />
             <DurationEndTimeFields />
           </div>
@@ -179,7 +213,7 @@ export default function BookingPage() {
 
         <div className="w-[380px] flex-shrink-0 sticky top-10 self-start">
           <div className="bg-bg-surface border border-border-subtle rounded-2xl">
-            <PriceSummary hourlyRate={unit.hourlyRate} onBook={handleBook} />
+            <PriceSummary hourlyRate={unit.hourlyRate} extraControllerRate={unit.extraControllerRate} onBook={handleBook} />
           </div>
         </div>
       </div>

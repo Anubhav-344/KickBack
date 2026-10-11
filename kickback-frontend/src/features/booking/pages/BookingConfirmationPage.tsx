@@ -84,6 +84,9 @@ export default function BookingConfirmationPage() {
           cafeName={booking.cafeName}
           resourceName={booking.resourceName}
           game={booking.game}
+          extraControllers={booking.extraControllers}
+          extraControllersUndecided={booking.extraControllersUndecided}
+          extraControllerRate={booking.extraControllerRate}
           dateLabel={dateLabel}
           startMinutes={startMinutes}
           endMinutes={endMinutes}

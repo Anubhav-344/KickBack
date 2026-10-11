@@ -11,7 +11,7 @@ export interface ExistingBooking {
   endMinutes: number;
 }
 
-export type TimelineSegmentType = "booked" | "available" | "selected";
+export type TimelineSegmentType = "booked" | "available" | "selected" | "past";
 
 export interface TimelineSegment {
   type: TimelineSegmentType;

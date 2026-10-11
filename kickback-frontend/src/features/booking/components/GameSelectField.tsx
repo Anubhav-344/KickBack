@@ -44,7 +44,7 @@ export default function GameSelectField({ games }: GameSelectFieldProps) {
                 <button
                   type="button"
                   aria-current={gameId === g.gameId ? "true" : undefined}
-                  onClick={() => setGame({ gameId: g.gameId, gameName: g.gameName })}
+                  onClick={() => setGame({ gameId: g.gameId, gameName: g.gameName, maxPlayers: g.maxPlayers })}
                   className={`text-left px-3.5 py-2.5 rounded-card border transition-colors ${
                     gameId === g.gameId
                       ? "border-accent bg-accent/10 text-text-primary"
@@ -64,7 +64,7 @@ export default function GameSelectField({ games }: GameSelectFieldProps) {
         <GameSelectPopover
           games={games}
           selectedGameId={gameId}
-          onSelect={(g) => setGame({ gameId: g.gameId, gameName: g.gameName })}
+          onSelect={(g) => setGame({ gameId: g.gameId, gameName: g.gameName, maxPlayers: g.maxPlayers })}
           trigger={triggerButton}
         />
       </div>
